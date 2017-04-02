@@ -1,0 +1,5 @@
+parameter.id;data;node.id;subscription.id!
+service:km:confluence:url;http://localhost:8120;service:km:confluence:dig;
+service:km:confluence:password;junit;service:km:confluence:dig;
+service:km:confluence:user;secret;service:km:confluence:dig;
+service:km:confluence:space;INDUS;;1

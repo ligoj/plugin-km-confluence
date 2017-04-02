@@ -1,0 +1,4 @@
+id;name;refined.id;mode;uiClasses;tag;tagUiClasses
+service:km;Knowledge Management;;LINK;fa fa-group;functional;fa fa-suitcase
+service:km:confluence;Confluence;service:km;LINK;;;
+service:km:confluence:dig;Confluence Gfi;service:km:confluence;LINK;;;

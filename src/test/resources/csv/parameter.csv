@@ -1,0 +1,5 @@
+id;owner.id;data;mandatory;type;mode;secured
+service:km:confluence:url;service:km:confluence;;true;TEXT;;
+service:km:confluence:space;service:km:confluence;;true;TEXT;;
+service:km:confluence:user;service:km:confluence;;false;TEXT;;true
+service:km:confluence:password;service:km:confluence;;false;TEXT;;true

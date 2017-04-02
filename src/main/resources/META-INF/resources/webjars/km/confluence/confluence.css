@@ -1,0 +1,8 @@
+#confluence-links img.tool {
+	float: right;
+}
+#confluence-links {
+	border-radius: 0;
+	margin-left: -15px;
+	margin-right: -1px;
+}
