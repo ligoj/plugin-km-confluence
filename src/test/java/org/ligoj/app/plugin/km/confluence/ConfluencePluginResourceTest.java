@@ -58,7 +58,8 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Before
 	public void prepareData() throws IOException {
 		// Only with Spring context
-		persistEntities("csv", new Class[] { Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class },
+		persistEntities("csv",
+				new Class[] { Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class },
 				StandardCharsets.UTF_8.name());
 		this.subscription = getSubscription("gStack");
 
@@ -67,7 +68,8 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	/**
-	 * Return the subscription identifier of MDA. Assumes there is only one subscription for a service.
+	 * Return the subscription identifier of the given project. Assumes there is
+	 * only one subscription for a service.
 	 */
 	protected int getSubscription(final String project) {
 		return getSubscription(project, KmResource.SERVICE_KEY);
@@ -97,16 +99,19 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	public void link() throws Exception {
 		prepareMockHome();
-		httpServer.stubFor(
-				post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Find space
-		httpServer.stubFor(get(urlEqualTo("/rest/api/space/INDUS?expand=description.plain"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
-						new ClassPathResource("mock-server/confluence/confluence-space-INDUS.json").getInputStream(), StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space/INDUS?expand=description.plain")).willReturn(aResponse()
+				.withStatus(HttpStatus.SC_OK)
+				.withBody(IOUtils.toString(
+						new ClassPathResource("mock-server/confluence/confluence-space-INDUS.json").getInputStream(),
+						StandardCharsets.UTF_8))));
 		httpServer.start();
 
-		// Invoke create for an already created entity, since for now, there is nothing but validation pour SonarQube
+		// Invoke create for an already created entity, since for now, there is
+		// nothing but validation pour SonarQube
 		resource.link(this.subscription);
 
 		// Nothing to validate for now...
@@ -117,12 +122,12 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher(ConfluencePluginResource.PARAMETER_SPACE, "confluence-space"));
 		prepareMockHome();
-		httpServer.stubFor(
-				post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Not find space
-		httpServer.stubFor(
-				get(urlEqualTo("/rest/api/space/INDUS?expand=description.plain")).willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space/INDUS?expand=description.plain"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 		httpServer.start();
 
 		final Map<String, String> parameters = nodeResource.getParametersAsMap("service:km:confluence:dig");
@@ -142,18 +147,21 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	public void testCheckSubscriptionStatus() throws Exception {
 		prepareMockSpace();
-		Assert.assertTrue(resource.checkSubscriptionStatus(subscriptionResource.getParametersNoCheck(subscription)).getStatus().isUp());
+		Assert.assertTrue(resource.checkSubscriptionStatus(subscriptionResource.getParametersNoCheck(subscription))
+				.getStatus().isUp());
 	}
 
 	private void prepareMockSpace() throws IOException {
 		prepareMockHome();
-		httpServer.stubFor(
-				post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Find space
-		httpServer.stubFor(get(urlEqualTo("/rest/api/space/INDUS?expand=description.plain"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
-						new ClassPathResource("mock-server/confluence/confluence-space-INDUS.json").getInputStream(), StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space/INDUS?expand=description.plain")).willReturn(aResponse()
+				.withStatus(HttpStatus.SC_OK)
+				.withBody(IOUtils.toString(
+						new ClassPathResource("mock-server/confluence/confluence-space-INDUS.json").getInputStream(),
+						StandardCharsets.UTF_8))));
 		httpServer.start();
 	}
 
@@ -162,11 +170,12 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		prepareMockVersion();
 
 		prepareMockHome();
-		httpServer.stubFor(
-				post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Administration access
-		httpServer.stubFor(get(urlEqualTo("/plugins/servlet/upm")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
+		httpServer
+				.stubFor(get(urlEqualTo("/plugins/servlet/upm")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
 		httpServer.start();
 		Assert.assertTrue(resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
 	}
@@ -179,8 +188,8 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		prepareMockVersion();
 
 		prepareMockHome();
-		httpServer.stubFor(
-				post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Administration access failed
 		httpServer.stubFor(get(urlEqualTo("/plugins/servlet/upm"))
@@ -206,17 +215,20 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		prepareMockVersion();
 
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "dologin.action")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(
+				aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "dologin.action")));
 		httpServer.start();
 		resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
 	}
 
 	private void prepareMockVersion() throws IOException {
 		// Version
-		httpServer.stubFor(get(urlEqualTo("/forgotuserpassword.action")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-				.withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-forgotuserpassword.action").getInputStream(),
-						StandardCharsets.UTF_8))));
+		httpServer
+				.stubFor(get(urlEqualTo("/forgotuserpassword.action"))
+						.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
+								.withBody(IOUtils.toString(new ClassPathResource(
+										"mock-server/confluence/confluence-forgotuserpassword.action").getInputStream(),
+										StandardCharsets.UTF_8))));
 	}
 
 	private void assertConnectionFailed() {
@@ -231,7 +243,8 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 
 		// Authentication
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY)));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY)));
 		httpServer.start();
 		resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
 	}
@@ -244,7 +257,8 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	public void testCheckStatusNotAccess() throws Exception {
 		thrown.expect(ValidationJsonException.class);
 		thrown.expect(MatcherUtil.validationMatcher(ConfluencePluginResource.PARAMETER_URL, "confluence-connection"));
-		httpServer.stubFor(get(urlEqualTo("/forgotuserpassword.action")).willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
+		httpServer.stubFor(get(urlEqualTo("/forgotuserpassword.action"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 		httpServer.start();
 		resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
 	}
@@ -252,15 +266,18 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	public void testFindSpacesByName() throws Exception {
 		prepareMockHome();
-		httpServer.stubFor(
-				post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		httpServer.stubFor(get(urlEqualTo("/rest/api/space?expand=description.plain&type=global&limit=100&start=0"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils
-						.toString(new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(), StandardCharsets.UTF_8))));
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
+						.withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(),
+								StandardCharsets.UTF_8))));
 		httpServer.stubFor(get(urlEqualTo("/rest/api/space?expand=description.plain&type=global&limit=100&start=100"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
-						new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(), StandardCharsets.UTF_8))));
+						new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(),
+						StandardCharsets.UTF_8))));
 		httpServer.start();
 
 		final List<IDescribableBean<String>> projects = resource.findAllByName("service:km:confluence:dig", "d");
@@ -271,15 +288,18 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	public void testFindSpacesByNameNotFound() throws Exception {
 		prepareMockHome();
-		httpServer.stubFor(
-				post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		httpServer.stubFor(get(urlEqualTo("/rest/api/space?expand=description.plain&type=global&limit=100&start=0"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils
-						.toString(new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(), StandardCharsets.UTF_8))));
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
+						.withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(),
+								StandardCharsets.UTF_8))));
 		httpServer.stubFor(get(urlEqualTo("/rest/api/space?expand=description.plain&type=global&limit=100&start=100"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
-						new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(), StandardCharsets.UTF_8))));
+						new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(),
+						StandardCharsets.UTF_8))));
 		httpServer.start();
 
 		final List<IDescribableBean<String>> projects = resource.findAllByName("service:km:confluence:dig", "zzz");
@@ -289,15 +309,18 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	public void testFindSpacesByNamePage2() throws Exception {
 		prepareMockHome();
-		httpServer.stubFor(
-				post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
+				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		httpServer.stubFor(get(urlEqualTo("/rest/api/space?expand=description.plain&type=global&limit=100&start=0"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils
-						.toString(new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(), StandardCharsets.UTF_8))));
+				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
+						.withBody(IOUtils.toString(
+								new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(),
+								StandardCharsets.UTF_8))));
 		httpServer.stubFor(get(urlEqualTo("/rest/api/space?expand=description.plain&type=global&limit=100&start=100"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
-						new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(), StandardCharsets.UTF_8))));
+						new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(),
+						StandardCharsets.UTF_8))));
 		httpServer.start();
 
 		final List<IDescribableBean<String>> projects = resource.findAllByName("service:km:confluence:dig", "xxx");
