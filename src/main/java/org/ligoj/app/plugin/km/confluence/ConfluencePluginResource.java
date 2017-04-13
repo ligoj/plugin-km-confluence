@@ -292,7 +292,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	@Override
-	public boolean checkStatus(final String node, final Map<String, String> parameters) throws Exception {
+	public boolean checkStatus(final Map<String, String> parameters) throws Exception {
 		// Status is UP <=> Administration access is UP (if defined)
 		validateAccess(parameters);
 
@@ -310,7 +310,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	@Override
-	public SubscriptionStatusWithData checkSubscriptionStatus(final String node, final Map<String, String> parameters) throws Exception {
+	public SubscriptionStatusWithData checkSubscriptionStatus(final Map<String, String> parameters) throws Exception {
 		validateSpace(parameters);
 		return new SubscriptionStatusWithData();
 	}
