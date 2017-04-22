@@ -15,7 +15,8 @@
 
 [Ligoj](https://github.com/ligoj/ligoj) Confluence plugin, and extending [Knowledge plugin](https://github.com/ligoj/plugin-km)
 Provides the following features :
-- Project home
+- Space home
+- Compatible with [Confluence](https://www.atlassian.com/software/confluence) 4.x to 6.x
 
 Dashboard features :
 - TODO
