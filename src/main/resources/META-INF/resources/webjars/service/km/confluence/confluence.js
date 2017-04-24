@@ -27,7 +27,7 @@ define(['cascade'], function ($cascade) {
 		 */
 		renderGlobal: function ($view, configuration) {
 			_('confluence-links').closest('.global-configuration').remove();
-			_('extra-menu').append('<img class="nav-icon visible-retracted" src="main/plugin/km/confluence/img/confluence.png" alt="confluence" title="" data-toggle="tooltip" data-container="body" data-original-title="Confluence">').append($view);
+			_('extra-menu').append('<img class="nav-icon visible-retracted" src="main/service/km/confluence/img/confluence.png" alt="confluence" title="" data-toggle="tooltip" data-container="body" data-original-title="Confluence">').append($view);
 			_('confluence-links').prepend(current.$super('toIcon')({
 				id: 'service:km:confluence'
 			}, 'x64'));
