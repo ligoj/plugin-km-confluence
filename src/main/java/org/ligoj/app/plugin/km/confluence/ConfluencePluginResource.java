@@ -77,6 +77,13 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	 */
 	public static final String PARAMETER_PASSWORD = KEY + ":password";
 
+	/**
+	 * Jackson type reference for Confluence space
+	 */
+	private static final TypeReference<Map<String, Object>> TYPE_SPACE_REF = new TypeReference<Map<String, Object>>() {
+		// Nothing to override
+	};
+
 	@Autowired
 	private InMemoryPagination inMemoryPagination;
 
@@ -139,13 +146,8 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 			// Invalid couple PKEY and id
 			throw new ValidationJsonException(PARAMETER_SPACE, "confluence-space", parameters.get(PARAMETER_SPACE));
 		}
-
 		// Build the result from JSON
-		final TypeReference<Map<String, Object>> typeReference = new TypeReference<Map<String, Object>>() {
-			// Nothing to override
-		};
-		final Map<String, Object> readValue = new ObjectMapper().readValue(spaceAsJson, typeReference);
-		return toSpace(readValue);
+		return toSpace(new ObjectMapper().readValue(spaceAsJson, TYPE_SPACE_REF));
 	}
 
 	@Override
