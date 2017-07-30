@@ -173,7 +173,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	public List<IDescribableBean<String>> findAllByName(@PathParam("node") final String node, @PathParam("criteria") final String criteria)
 			throws IOException {
 		// Get the target node parameters
-		final Map<String, String> parameters = nodeResource.getParametersAsMap(node);
+		final Map<String, String> parameters = pvResource.getNodeParameters(node);
 		final List<IDescribableBean<String>> result = new ArrayList<>();
 		int start = 0;
 		// Limit the result to 10

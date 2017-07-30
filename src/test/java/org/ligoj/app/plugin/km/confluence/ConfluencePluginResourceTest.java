@@ -26,7 +26,7 @@ import org.ligoj.app.model.ParameterValue;
 import org.ligoj.app.model.Project;
 import org.ligoj.app.model.Subscription;
 import org.ligoj.app.plugin.km.KmResource;
-import org.ligoj.app.resource.node.NodeResource;
+import org.ligoj.app.resource.node.ParameterValueResource;
 import org.ligoj.app.resource.subscription.SubscriptionResource;
 import org.ligoj.bootstrap.core.IDescribableBean;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
@@ -51,7 +51,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	private SubscriptionResource subscriptionResource;
 
 	@Autowired
-	private NodeResource nodeResource;
+	private ParameterValueResource pvResource;
 
 	protected int subscription;
 
@@ -130,7 +130,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 				.willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 		httpServer.start();
 
-		final Map<String, String> parameters = nodeResource.getParametersAsMap("service:km:confluence:dig");
+		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "0");
 		resource.validateSpace(parameters);
 	}
@@ -139,7 +139,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	public void testValidateSpace() throws Exception {
 		prepareMockSpace();
 
-		final Map<String, String> parameters = nodeResource.getParametersAsMap("service:km:confluence:dig");
+		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "INDUS");
 		checkSpace(resource.validateSpace(parameters));
 	}
