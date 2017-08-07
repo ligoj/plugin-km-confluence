@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.text.Format;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -19,6 +20,7 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.SubscriptionStatusWithData;
+import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.plugin.km.KmResource;
 import org.ligoj.app.plugin.km.KmServicePlugin;
 import org.ligoj.app.resource.NormalizeFormat;
@@ -29,6 +31,7 @@ import org.ligoj.app.resource.plugin.VersionUtils;
 import org.ligoj.bootstrap.core.DescribedBean;
 import org.ligoj.bootstrap.core.IDescribableBean;
 import org.ligoj.bootstrap.core.json.InMemoryPagination;
+import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -89,6 +92,12 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 
 	@Autowired
 	protected VersionUtils versionUtils;
+
+	@Autowired
+	private NodeRepository nodeRepository;
+
+	@Autowired
+	private SecurityHelper securityHelper;
 
 	/**
 	 * Check the server is available.
@@ -172,6 +181,11 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	@Consumes(MediaType.APPLICATION_JSON)
 	public List<IDescribableBean<String>> findAllByName(@PathParam("node") final String node, @PathParam("criteria") final String criteria)
 			throws IOException {
+		// Check the node exists
+		if (nodeRepository.findOneVisible(node, securityHelper.getLogin()) == null) {
+			return Collections.emptyList();
+		}
+
 		// Get the target node parameters
 		final Map<String, String> parameters = pvResource.getNodeParameters(node);
 		final List<IDescribableBean<String>> result = new ArrayList<>();

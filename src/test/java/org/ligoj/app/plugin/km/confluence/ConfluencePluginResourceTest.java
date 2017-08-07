@@ -264,6 +264,11 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
+	public void findSpacesByNameNodeNotExists() throws IOException {
+		Assert.assertEquals(0, resource.findAllByName("service:km:confluence:any", "10000").size());
+	}
+
+	@Test
 	public void testFindSpacesByName() throws Exception {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
