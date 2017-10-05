@@ -12,6 +12,14 @@ define(['cascade'], function ($cascade) {
 		},
 
 		/**
+		 * Render Confluence details : id, name, 
+		 */
+		renderDetailsKey: function (subscription) {
+			return current.$super('generateCarousel')(subscription, [current.renderKey(subscription), ['name', subscription.data.space.name]
+			], 1);
+		},
+
+		/**
 		 * Render Confluence data.
 		 */
 		renderFeatures: function (subscription) {
@@ -19,6 +27,24 @@ define(['cascade'], function ($cascade) {
 			// Help
 			result += current.$super('renderServiceHelpLink')(subscription.parameters, 'service:km:help');
 			return result;
+		},
+
+		/**
+		 * Display the last updated date + profile picture (ignore default.png)
+		 */
+		renderDetailsFeatures: function (subscription) {
+			var activity = subscription.data.space && subscription.data.space.activity;
+			if (activity) {
+				// Render activity page
+				var avatarContent;
+				if (activity.authorAvatar) {
+					avatarContent = '<img src="' + activity.authorAvatar + '"/>';
+				} else {
+					avatarContent = '<span class="">' + current.$main.toUser2Letters(activity.author) + '</span>';
+				}
+				return '<a target="#blank" data-toggle="tooltip" title="' + activity.page + '<br/>' + current.$main.getFullName(activity.author) + '<br>' + activity.moment + '" class="confluence-avatar label label-info avatar" href="' + activity.pageUrl + '">' + avatarContent + '</a>';
+			}
+			return '';
 		},
 
 		/**

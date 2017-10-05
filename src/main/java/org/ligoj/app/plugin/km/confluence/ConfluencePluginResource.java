@@ -1,13 +1,18 @@
 package org.ligoj.app.plugin.km.confluence;
 
 import java.io.IOException;
+import java.net.MalformedURLException;
 import java.text.Format;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.HttpMethod;
@@ -15,12 +20,15 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
+import javax.xml.bind.DatatypeConverter;
 
-import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.ligoj.app.api.SubscriptionStatusWithData;
 import org.ligoj.app.dao.NodeRepository;
+import org.ligoj.app.iam.IamProvider;
+import org.ligoj.app.iam.SimpleUser;
 import org.ligoj.app.plugin.km.KmResource;
 import org.ligoj.app.plugin.km.KmServicePlugin;
 import org.ligoj.app.resource.NormalizeFormat;
@@ -28,8 +36,6 @@ import org.ligoj.app.resource.plugin.AbstractToolPluginResource;
 import org.ligoj.app.resource.plugin.CurlProcessor;
 import org.ligoj.app.resource.plugin.CurlRequest;
 import org.ligoj.app.resource.plugin.VersionUtils;
-import org.ligoj.bootstrap.core.DescribedBean;
-import org.ligoj.bootstrap.core.IDescribableBean;
 import org.ligoj.bootstrap.core.json.InMemoryPagination;
 import org.ligoj.bootstrap.core.security.SecurityHelper;
 import org.ligoj.bootstrap.core.validation.ValidationJsonException;
@@ -49,6 +55,13 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 @Produces(MediaType.APPLICATION_JSON)
 public class ConfluencePluginResource extends AbstractToolPluginResource implements KmServicePlugin {
+
+	/**
+	 * Space activity pattern for HTML markup.
+	 */
+	private static final Pattern ACTIVITY_PATTERN = Pattern.compile(
+			"logo\"\\s*src=\"([^\"]+)\".*data-username=\"([^\"]+)\"[^>]+>([^<]+)<.*href=\"([^\"]+)\"[^>]*>([^<]+)<.*update-item-date\">([^<]+)<",
+			Pattern.DOTALL);
 
 	/**
 	 * Plug-in key.
@@ -91,6 +104,9 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	private InMemoryPagination inMemoryPagination;
 
 	@Autowired
+	protected IamProvider iamProvider[];
+
+	@Autowired
 	protected VersionUtils versionUtils;
 
 	@Autowired
@@ -98,6 +114,9 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 
 	@Autowired
 	private SecurityHelper securityHelper;
+
+	@Autowired
+	private ObjectMapper objectMapper;
 
 	/**
 	 * Check the server is available.
@@ -126,7 +145,8 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	/**
-	 * Validate the administration connectivity. Expect an authenticated connection.
+	 * Validate the administration connectivity. Expect an authenticated
+	 * connection.
 	 */
 	private void validateAdminAccess(final Map<String, String> parameters, final CurlProcessor processor) {
 		final List<CurlRequest> requests = new ArrayList<>();
@@ -140,23 +160,68 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	/**
-	 * Validate the space configuration.
+	 * Validate the space configuration and return the corresponding details.
 	 * 
 	 * @param parameters
 	 *            the space parameters.
-	 * @return project description.
+	 * @return Space's details.
 	 */
-	protected IDescribableBean<String> validateSpace(final Map<String, String> parameters) throws IOException {
+	protected Space validateSpace(final Map<String, String> parameters) throws IOException {
+		final String baseUrl = StringUtils.removeEnd(parameters.get(PARAMETER_URL), "/");
+
+		CurlRequest[] requests = null;
+
+		try {
+			// Validate the space key and get activity
+			requests = validateSpaceInternal(parameters, "/rest/api/space/",
+					"/plugins/recently-updated/changes.action?theme=social&pageSize=1&spaceKeys=");
+
+			// Parse the space details
+			final Map<String, Object> details = objectMapper.readValue(requests[0].getResponse(), TYPE_SPACE_REF);
+
+			// Build the full space object
+			return toSpace(baseUrl, details, requests[1].getResponse(), requests[0].getProcessor());
+		} finally {
+			// Close the processor
+			closeQuietly(requests);
+		}
+	}
+
+	/**
+	 * CLose the related processor as needed.
+	 */
+	private void closeQuietly(final CurlRequest[] requests) {
+		if (requests != null) {
+			requests[0].getProcessor().close();
+		}
+
+	}
+
+	/**
+	 * Validate the space configuration and return the corresponding details.
+	 */
+	protected CurlRequest[] validateSpaceInternal(final Map<String, String> parameters, final String... partialRequests) {
+		final String url = StringUtils.removeEnd(parameters.get(PARAMETER_URL), "/");
+		final String space = ObjectUtils.defaultIfNull(parameters.get(PARAMETER_SPACE), "0");
+		final CurlRequest[] result = new CurlRequest[partialRequests.length];
+		for (int i = 0; i < partialRequests.length; i++) {
+			result[i] = new CurlRequest(HttpMethod.GET, url + partialRequests[i] + space, null);
+			result[i].setSaveResponse(true);
+		}
+
+		// Prepare the sequence of HTTP requests to Confluence
+		final ConfluenceCurlProcessor processor = new ConfluenceCurlProcessor();
+		authenticate(parameters, processor);
+
+		// Execute the requests
+		processor.process(result);
 
 		// Get the space if it exists
-		final String spaceAsJson = getConfluenceResource(parameters,
-				"/rest/api/space/" + ObjectUtils.defaultIfNull(parameters.get(PARAMETER_SPACE), "0") + "?expand=description.plain");
-		if (spaceAsJson == null) {
+		if (result[0].getResponse() == null) {
 			// Invalid couple PKEY and id
 			throw new ValidationJsonException(PARAMETER_SPACE, "confluence-space", parameters.get(PARAMETER_SPACE));
 		}
-		// Build the result from JSON
-		return toSpace(new ObjectMapper().readValue(spaceAsJson, TYPE_SPACE_REF));
+		return result;
 	}
 
 	@Override
@@ -164,11 +229,18 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 		final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
 
 		// Validate the space key
-		validateSpace(parameters);
+		CurlRequest[] requests = null;
+		try {
+			requests = validateSpaceInternal(parameters, "/rest/api/space/");
+		} finally {
+			// Close the processor
+			closeQuietly(requests);
+		}
 	}
 
 	/**
-	 * Find the spaces matching to the given criteria. Look into space key, and space name.
+	 * Find the spaces matching to the given criteria. Look into space key, and
+	 * space name.
 	 * 
 	 * @param node
 	 *            the node to be tested with given parameters.
@@ -179,7 +251,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	@GET
 	@Path("{node}/{criteria}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public List<IDescribableBean<String>> findAllByName(@PathParam("node") final String node, @PathParam("criteria") final String criteria)
+	public List<Space> findAllByName(@PathParam("node") final String node, @PathParam("criteria") final String criteria)
 			throws IOException {
 		// Check the node exists
 		if (nodeRepository.findOneVisible(node, securityHelper.getLogin()) == null) {
@@ -188,9 +260,9 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 
 		// Get the target node parameters
 		final Map<String, String> parameters = pvResource.getNodeParameters(node);
-		final List<IDescribableBean<String>> result = new ArrayList<>();
+		final List<Space> result = new ArrayList<>();
 		int start = 0;
-		// Limit the result to 10
+		// Limit the result to 10, and search with a page size of 100
 		while (addAllByName(parameters, criteria, result, start) && result.size() < 10) {
 			start += 100;
 		}
@@ -199,7 +271,8 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	/**
-	 * Find the spaces matching to the given criteria. Look into space key, and space name.
+	 * Find the spaces matching to the given criteria. Look into space key, and
+	 * space name.
 	 * 
 	 * @param parameters
 	 *            the node parameters.
@@ -209,18 +282,18 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	 *            the cursor position.
 	 * @return <code>true</code> when there are more spaces to fetch.
 	 */
-	private boolean addAllByName(final Map<String, String> parameters, final String criteria, final List<IDescribableBean<String>> result,
-			final int start) throws IOException {
+	private boolean addAllByName(final Map<String, String> parameters, final String criteria, final List<Space> result, final int start)
+			throws IOException {
 		// The result should be JSON, otherwise, an empty result is mocked
 		final String spacesAsJson = StringUtils.defaultString(
-				getConfluenceResource(parameters, "/rest/api/space?expand=description.plain&type=global&limit=100&start=" + start),
+				getConfluenceResource(parameters, "/rest/api/space?type=global&limit=100&start=" + start),
 				"{\"results\":[],\"_links\":{}}");
 
 		// Build the result from JSON
 		final TypeReference<Map<String, Object>> typeReference = new TypeReference<Map<String, Object>>() {
 			// Nothing to override
 		};
-		final Map<String, Object> readValue = new ObjectMapper().readValue(spacesAsJson, typeReference);
+		final Map<String, Object> readValue = objectMapper.readValue(spacesAsJson, typeReference);
 		@SuppressWarnings("unchecked")
 		final Collection<Map<String, Object>> spaces = (Collection<Map<String, Object>>) readValue.get("results");
 
@@ -230,11 +303,10 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 
 		// Get the projects and parse them
 		for (final Map<String, Object> spaceRaw : spaces) {
-			final IDescribableBean<String> space = toSpace(spaceRaw);
+			final Space space = toSpaceLight(spaceRaw);
 
 			// Check the values of this project
-			if (format.format(space.getName()).contains(formatCriteria)
-					|| format.format(StringUtils.defaultString(space.getDescription())).contains(formatCriteria)) {
+			if (format.format(space.getName()).contains(formatCriteria) || format.format(space.getId()).contains(formatCriteria)) {
 				result.add(space);
 			}
 		}
@@ -242,29 +314,104 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	/**
-	 * Map raw Confluence values to a bean
+	 * Map raw Confluence values to a simple details of space
 	 */
-	private IDescribableBean<String> toSpace(final Map<String, Object> spaceRaw) {
-		final IDescribableBean<String> space = new DescribedBean<>();
+	private Space toSpaceLight(final Map<String, Object> spaceRaw) {
+		final Space space = new Space();
 		space.setId((String) spaceRaw.get("key"));
 		space.setName((String) spaceRaw.get("name"));
-		@SuppressWarnings("unchecked")
-		final Map<String, Object> descriptionRaw = MapUtils.emptyIfNull((Map<String, Object>) spaceRaw.get("description"));
-		@SuppressWarnings("unchecked")
-		final Map<String, Object> descriptionPlainRaw = MapUtils.emptyIfNull((Map<String, Object>) descriptionRaw.get("plain"));
-		space.setDescription((String) descriptionPlainRaw.get("value"));
 		return space;
 	}
 
 	/**
-	 * Return a Confluence's resource. Return <code>null</code> when the resource is not found.
+	 * Map API JSON Space and history values to a bean.
+	 */
+	private Space toSpace(final String baseUrl, final Map<String, Object> spaceRaw, final String history, final CurlProcessor processor)
+			throws MalformedURLException {
+		final Space space = toSpaceLight(spaceRaw);
+		final String hostUrl = StringUtils.removeEnd(baseUrl, new java.net.URL(baseUrl).getPath());
+
+		// Check the activity if available
+		final Matcher matcher = ACTIVITY_PATTERN.matcher(StringUtils.defaultString(history));
+		if (matcher.find()) {
+			// Activity has been found
+			final SpaceActivity activity = new SpaceActivity();
+			getAvatar(processor, activity, hostUrl + matcher.group(1));
+			activity.setAuthor(toSimpleUser(matcher.group(2), matcher.group(3)));
+			activity.setPageUrl(hostUrl + matcher.group(4));
+			activity.setPage(matcher.group(5));
+			activity.setMoment(matcher.group(6));
+			space.setActivity(activity);
+		}
+		return space;
+	}
+
+	/**
+	 * Return the avatar PNG file from URL.
+	 */
+	private void getAvatar(final CurlProcessor processor, final SpaceActivity activity, final String avatarUrl) {
+		if (!avatarUrl.endsWith("/default.png")) {
+			// Not default URL, get the PNG bytes
+			processor.process(new CurlRequest("GET", avatarUrl, null, (req, res) -> {
+				// PNG to DATA URL
+				if (res.getStatusLine().getStatusCode() == HttpServletResponse.SC_OK) {
+					activity.setAuthorAvatar("data:image/png;base64,"
+							+ DatatypeConverter.printBase64Binary(IOUtils.toByteArray(res.getEntity().getContent())));
+				}
+				return true;
+			}));
+		}
+	}
+
+	/**
+	 * Search the given user name using IAM, and if not found use the resolved
+	 * Confluence display name.
+	 * 
+	 * @param login
+	 *            The user login, as requested to IAM.
+	 * @param displayName
+	 *            The resolved Confluence display name, used when the user has
+	 *            not been found in IAM.
+	 * @return A {@link SimpleUser} instance representing at best effort the
+	 *         requested user.
+	 */
+	protected SimpleUser toSimpleUser(final String login, final String displayName) {
+		return Optional.ofNullable(getUser(login)).map(u -> {
+			final SimpleUser user = new SimpleUser();
+			u.copy(user);
+			return user;
+		}).orElseGet(() -> {
+			final SimpleUser user = new SimpleUser();
+			// Painful trying to separate first/last name
+			user.setId(login);
+			user.setFirstName(displayName);
+			return user;
+		});
+	}
+
+	/**
+	 * Request IAM provider to get user details.
+	 * 
+	 * @param login
+	 *            The requested user login.
+	 * @return Either the resolved instance, either <code>null</code> when not
+	 *         found.
+	 */
+	protected SimpleUser getUser(final String login) {
+		return iamProvider[0].getConfiguration().getUserRepository().findById(login);
+	}
+
+	/**
+	 * Return a Confluence's resource. Return <code>null</code> when the
+	 * resource is not found.
 	 */
 	protected String getConfluencePublicResource(final Map<String, String> parameters, final String resource) {
 		return getConfluenceResource(new CurlProcessor(), parameters.get(PARAMETER_URL), resource);
 	}
 
 	/**
-	 * Return a Confluence's resource after an authentication. Return <code>null</code> when the resource is not found.
+	 * Return a Confluence's resource after an authentication. Return
+	 * <code>null</code> when the resource is not found.
 	 */
 	protected String getConfluenceResource(final Map<String, String> parameters, final String resource) {
 		final ConfluenceCurlProcessor processor = new ConfluenceCurlProcessor();
@@ -273,17 +420,16 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	/**
-	 * Return a Jenkins's resource. Return <code>null</code> when the resource is not found.
+	 * Return a Jenkins's resource. Return <code>null</code> when the resource
+	 * is not found.
 	 */
 	protected String getConfluenceResource(final CurlProcessor processor, final String url, final String resource) {
 		// Get the resource using the preempted authentication
 		final CurlRequest request = new CurlRequest(HttpMethod.GET, StringUtils.removeEnd(url, "/") + resource, null);
 		request.setSaveResponse(true);
-		final List<CurlRequest> requests = new ArrayList<>();
-		requests.add(request);
 
 		// Execute the requests
-		processor.process(requests);
+		processor.process(request);
 		processor.close();
 		return request.getResponse();
 	}
@@ -327,7 +473,8 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 
 	@Override
 	public SubscriptionStatusWithData checkSubscriptionStatus(final Map<String, String> parameters) throws Exception {
-		validateSpace(parameters);
-		return new SubscriptionStatusWithData();
+		final SubscriptionStatusWithData data = new SubscriptionStatusWithData();
+		data.put("space", validateSpace(parameters));
+		return data;
 	}
 }
