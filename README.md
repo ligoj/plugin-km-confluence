@@ -19,4 +19,4 @@ Provides the following features :
 - Compatible with [Confluence](https://www.atlassian.com/software/confluence) 4.x to 6.x
 
 Dashboard features :
-- TODO
+- Last activity in the space : related page, author and moment
