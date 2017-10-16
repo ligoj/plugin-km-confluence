@@ -6,18 +6,32 @@
 	margin-left: -15px;
 	margin-right: -1px;
 }
-.confluence-avatar.label.avatar {
-    padding-top: 10px;
-	margin-top: -8px;
-	margin-bottom: -8px;
+.confluence-avatar.avatar {
+	margin-top: -10px;
+    margin-left: -6px;
+    margin-bottom: -10px;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    padding-top: 8px;
+}
+.confluence-avatar.avatar:hover span{
+	text-shadow: 1px 1px 2px black, 0 0 25px blue, 0 0 5px darkblue;
+}
+.confluence-avatar.avatar:hover {
+	border-color: rgba(0, 0, 255, 0.61);
+	-webkit-box-shadow: 0px 0px 4px 2px rgba(22, 37, 133, 0.55);
+	-moz-box-shadow: 0px 0px 4px 2px rgba(22, 37, 133, 0.55);
+	box-shadow: 0px 0px 4px 2px rgba(22, 37, 133, 0.55);
+	background-color: rgba(22,37,133,1);
 }
 .confluence-avatar.label.avatar img {
-    margin-top: -11px;
-	margin-bottom: -7px;
+	margin-top: -8px;
+    margin-bottom: -4px;
+    margin-left: -6px;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    margin-left: -7px;
+    width: 24px;
+    height: 24px;
 }
 .subscriptions .service-km-confluence-dig td.features .details {
 	overflow: visible;
