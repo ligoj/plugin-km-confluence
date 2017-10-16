@@ -1,3 +1,6 @@
+.masonry-container .node.service-km-confluence table.subscriptions th.features {
+	width: 48px;
+}
 #confluence-links img.tool {
 	float: right;
 }
@@ -8,14 +11,15 @@
 }
 .confluence-avatar.avatar {
 	margin-top: -10px;
-    margin-left: -6px;
     margin-bottom: -10px;
     border-radius: 50%;
     width: 28px;
     height: 28px;
     padding-top: 8px;
+	padding-left: 0;
+    padding-right: 0;
 }
-.confluence-avatar.avatar:hover span{
+.confluence-avatar.avatar:hover span {
 	text-shadow: 1px 1px 2px black, 0 0 25px blue, 0 0 5px darkblue;
 }
 .confluence-avatar.avatar:hover {
@@ -28,11 +32,8 @@
 .confluence-avatar.label.avatar img {
 	margin-top: -8px;
     margin-bottom: -4px;
-    margin-left: -6px;
+    margin-left: 0;
     border-radius: 50%;
     width: 24px;
     height: 24px;
-}
-.subscriptions .service-km-confluence-dig td.features .details {
-	overflow: visible;
 }
