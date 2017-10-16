@@ -13,6 +13,7 @@
 }
 .confluence-avatar.label.avatar img {
     margin-top: -11px;
+	margin-bottom: -7px;
     border-radius: 50%;
     width: 30px;
     height: 30px;
