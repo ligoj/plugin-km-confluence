@@ -104,7 +104,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	private InMemoryPagination inMemoryPagination;
 
 	@Autowired
-	protected IamProvider iamProvider[];
+	protected IamProvider[] iamProvider;
 
 	@Autowired
 	protected VersionUtils versionUtils;
@@ -267,7 +267,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 			start += 100;
 		}
 
-		return inMemoryPagination.newPage(result, new PageRequest(0, 10)).getContent();
+		return inMemoryPagination.newPage(result, PageRequest.of(0, 10)).getContent();
 	}
 
 	/**
