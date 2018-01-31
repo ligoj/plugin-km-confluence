@@ -14,10 +14,10 @@ import javax.transaction.Transactional;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpStatus;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.ligoj.app.AbstractServerTest;
 import org.ligoj.app.MatcherUtil;
 import org.ligoj.app.api.SubscriptionStatusWithData;
@@ -40,12 +40,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Test class of {@link ConfluencePluginResource}
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@ExtendWith(SpringExtension.class)
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
@@ -61,7 +61,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 
 	protected int subscription;
 
-	@Before
+	@BeforeEach
 	public void prepareData() throws IOException {
 		// Only with Spring context
 		persistSystemEntities();
@@ -93,14 +93,14 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		httpServer.start();
 
 		final String version = resource.getVersion(subscription);
-		Assert.assertEquals("5.7.5", version);
+		Assertions.assertEquals("5.7.5", version);
 	}
 
 	@Test
 	public void getLastVersion() throws Exception {
 		final String lastVersion = resource.getLastVersion();
-		Assert.assertNotNull(lastVersion);
-		Assert.assertTrue(lastVersion.compareTo("5.8.0") > 0);
+		Assertions.assertNotNull(lastVersion);
+		Assertions.assertTrue(lastVersion.compareTo("5.8.0") > 0);
 	}
 
 	@Test
@@ -122,7 +122,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		// Nothing to validate for now...
 	}
 
-	@Test(expected = ValidationJsonException.class)
+	@Test
 	public void linkNoSpace() throws Exception {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
@@ -131,13 +131,13 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		// Find space -> not found
 		httpServer.stubFor(get(urlEqualTo("/rest/api/space/SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 		httpServer.start();
-		resource.link(this.subscription);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.link(this.subscription);
+		}), "service:km:confluence:space", "confluence-space");
 	}
 
 	@Test
 	public void validateSpaceNotFound() throws Exception {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher(ConfluencePluginResource.PARAMETER_SPACE, "confluence-space"));
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
@@ -148,7 +148,9 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "0");
-		resource.validateSpace(parameters);
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.validateSpace(parameters);
+		}), ConfluencePluginResource.PARAMETER_SPACE, "confluence-space");
 	}
 
 	@Test
@@ -161,7 +163,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		checkSpaceActivityAvatar(resource.validateSpace(parameters));
 	}
 
-	@Test(expected = IOException.class)
+	@Test
 	public void validateSpaceJSonError() throws Exception {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
@@ -174,7 +176,9 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "SPACE");
-		resource.validateSpace(parameters);
+		Assertions.assertThrows(IOException.class, () -> {
+			resource.validateSpace(parameters);
+		});
 	}
 
 	@Test
@@ -189,7 +193,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "SPACE");
 		final Space space = resource.validateSpace(parameters);
-		Assert.assertNull(checkSpaceActivity(space).getActivity().getAuthorAvatar());
+		Assertions.assertNull(checkSpaceActivity(space).getActivity().getAuthorAvatar());
 	}
 
 	@Test
@@ -206,7 +210,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "SPACE");
 		final Space space = resource.validateSpace(parameters);
 		checkSpaceActivity(space);
-		Assert.assertNull(space.getActivity().getAuthorAvatar());
+		Assertions.assertNull(space.getActivity().getAuthorAvatar());
 	}
 
 	@Test
@@ -228,7 +232,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "SPACE");
 		final Space space = resource.validateSpace(parameters);
 		checkSpaceActivity(space);
-		Assert.assertNull(space.getActivity().getAuthorAvatar());
+		Assertions.assertNull(space.getActivity().getAuthorAvatar());
 	}
 
 	@Test
@@ -237,7 +241,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		httpServer.start();
 		final SubscriptionStatusWithData checkSubscriptionStatus = resource
 				.checkSubscriptionStatus(subscriptionResource.getParametersNoCheck(subscription));
-		Assert.assertTrue(checkSubscriptionStatus.getStatus().isUp());
+		Assertions.assertTrue(checkSubscriptionStatus.getStatus().isUp());
 		checkSpaceActivity((Space) checkSubscriptionStatus.getData().get("space"));
 	}
 
@@ -247,10 +251,10 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		httpServer.start();
 		final SubscriptionStatusWithData checkSubscriptionStatus = resource
 				.checkSubscriptionStatus(subscriptionResource.getParametersNoCheck(subscription));
-		Assert.assertTrue(checkSubscriptionStatus.getStatus().isUp());
+		Assertions.assertTrue(checkSubscriptionStatus.getStatus().isUp());
 		final Space space = (Space) checkSubscriptionStatus.getData().get("space");
 		checkSpace(space);
-		Assert.assertNull(space.getActivity());
+		Assertions.assertNull(space.getActivity());
 	}
 
 	private void prepareMockSpace() throws IOException {
@@ -290,14 +294,11 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		// Administration access
 		httpServer.stubFor(get(urlEqualTo("/plugins/servlet/upm")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
 		httpServer.start();
-		Assert.assertTrue(resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
+		Assertions.assertTrue(resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
 	}
 
 	@Test
 	public void checkStatusNotAdmin() throws Exception {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher(ConfluencePluginResource.PARAMETER_URL, "confluence-admin"));
-
 		prepareMockVersion();
 
 		prepareMockHome();
@@ -308,30 +309,34 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		httpServer.stubFor(get(urlEqualTo("/plugins/servlet/upm"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 		httpServer.start();
-		Assert.assertTrue(resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			Assertions.assertTrue(resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
+		}), ConfluencePluginResource.PARAMETER_URL, "confluence-admin");
 	}
 
 	@Test
 	public void checkStatusNotAuthentication() throws Exception {
-		assertConnectionFailed();
 		prepareMockVersion();
 
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
 		httpServer.start();
-		resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		}), ConfluencePluginResource.PARAMETER_URL, "confluence-login");
 	}
 
 	@Test
 	public void checkStatusNotAuthenticationBadLocation() throws Exception {
-		assertConnectionFailed();
 		prepareMockVersion();
 
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "dologin.action")));
 		httpServer.start();
-		resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		}), ConfluencePluginResource.PARAMETER_URL, "confluence-login");
 	}
 
 	private void prepareMockVersion() throws IOException {
@@ -342,21 +347,17 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 						StandardCharsets.UTF_8))));
 	}
 
-	private void assertConnectionFailed() {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher(ConfluencePluginResource.PARAMETER_URL, "confluence-login"));
-	}
-
 	@Test
 	public void checkStatusNotAuthenticationNoLocation() throws Exception {
-		assertConnectionFailed();
 		prepareMockVersion();
 
 		// Authentication
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY)));
 		httpServer.start();
-		resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		}), ConfluencePluginResource.PARAMETER_URL, "confluence-login");
 	}
 
 	private void prepareMockHome() {
@@ -365,16 +366,16 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 
 	@Test
 	public void checkStatusNotAccess() throws Exception {
-		thrown.expect(ValidationJsonException.class);
-		thrown.expect(MatcherUtil.validationMatcher(ConfluencePluginResource.PARAMETER_URL, "confluence-connection"));
 		httpServer.stubFor(get(urlEqualTo("/forgotuserpassword.action")).willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 		httpServer.start();
-		resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
+			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
+		}), ConfluencePluginResource.PARAMETER_URL, "confluence-connection");
 	}
 
 	@Test
 	public void findSpacesByNameNodeNotExists() throws IOException {
-		Assert.assertEquals(0, resource.findAllByName("service:km:confluence:any", "10000").size());
+		Assertions.assertEquals(0, resource.findAllByName("service:km:confluence:any", "10000").size());
 	}
 
 	@Test
@@ -393,7 +394,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		httpServer.start();
 
 		final List<Space> projects = resource.findAllByName("service:km:confluence:dig", "p");
-		Assert.assertEquals(10, projects.size());
+		Assertions.assertEquals(10, projects.size());
 		checkSpace(projects.get(4));
 	}
 
@@ -413,14 +414,14 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		httpServer.start();
 
 		final List<Space> projects = resource.findAllByName("service:km:confluence:dig", "zzz");
-		Assert.assertTrue(projects.isEmpty());
+		Assertions.assertTrue(projects.isEmpty());
 	}
 
 	@Test
 	public void testFindSpacesByNameNoRight() throws Exception {
 		initSpringSecurityContext("any");
 		final List<Space> projects = resource.findAllByName("service:km:confluence:dig", "SPACE");
-		Assert.assertEquals(0, projects.size());
+		Assertions.assertEquals(0, projects.size());
 	}
 
 	@Test
@@ -439,42 +440,42 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		httpServer.start();
 
 		final List<Space> projects = resource.findAllByName("service:km:confluence:dig", "xxx");
-		Assert.assertEquals(1, projects.size());
-		Assert.assertEquals("XXX", projects.get(0).getId());
-		Assert.assertEquals("XXX - Full Name", projects.get(0).getName());
-		Assert.assertNull(projects.get(0).getActivity());
+		Assertions.assertEquals(1, projects.size());
+		Assertions.assertEquals("XXX", projects.get(0).getId());
+		Assertions.assertEquals("XXX - Full Name", projects.get(0).getName());
+		Assertions.assertNull(projects.get(0).getActivity());
 	}
 
 	private void checkSpace(final Space space) {
-		Assert.assertEquals("SPACE", space.getId());
-		Assert.assertEquals("My Space Name", space.getName());
+		Assertions.assertEquals("SPACE", space.getId());
+		Assertions.assertEquals("My Space Name", space.getName());
 	}
 
 	private Space checkSpaceActivity(final Space space) {
 		checkSpace(space);
 		final SpaceActivity activity = space.getActivity();
-		Assert.assertNotNull(activity);
-		Assert.assertEquals("user1", activity.getAuthor().getId());
-		Assert.assertEquals("updated 5 minutes ago", activity.getMoment());
-		Assert.assertEquals("My Page", activity.getPage());
-		Assert.assertEquals("http://localhost:8120/display/SPACE/Page", activity.getPageUrl());
+		Assertions.assertNotNull(activity);
+		Assertions.assertEquals("user1", activity.getAuthor().getId());
+		Assertions.assertEquals("updated 5 minutes ago", activity.getMoment());
+		Assertions.assertEquals("My Page", activity.getPage());
+		Assertions.assertEquals("http://localhost:8120/display/SPACE/Page", activity.getPageUrl());
 		return space;
 	}
 
 	private Space checkSpaceActivityAvatar(final Space space) {
 		checkSpaceActivity(space);
 		final SpaceActivity activity = space.getActivity();
-		Assert.assertTrue(activity.getAuthorAvatar().startsWith("data:image/png;base64,iVBORw0K"));
-		Assert.assertEquals(3614, activity.getAuthorAvatar().length());
+		Assertions.assertTrue(activity.getAuthorAvatar().startsWith("data:image/png;base64,iVBORw0K"));
+		Assertions.assertEquals(3614, activity.getAuthorAvatar().length());
 		return space;
 	}
 
 	@Test
 	public void toSimpleUser() {
 		final SimpleUser simpleUser = resource.toSimpleUser("some", "any");
-		Assert.assertEquals("some", simpleUser.getId());
-		Assert.assertEquals("First", simpleUser.getFirstName());
-		Assert.assertEquals("Last", simpleUser.getLastName());
+		Assertions.assertEquals("some", simpleUser.getId());
+		Assertions.assertEquals("First", simpleUser.getFirstName());
+		Assertions.assertEquals("Last", simpleUser.getLastName());
 	}
 
 	@Test
@@ -485,8 +486,8 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 		Mockito.when(resource.iamProvider[0].getConfiguration()).thenReturn(iamConfiguration);
 		Mockito.when(iamConfiguration.getUserRepository()).thenReturn(Mockito.mock(IUserRepository.class));
 		final SimpleUser simpleUser = resource.toSimpleUser("some", "Some People");
-		Assert.assertEquals("some", simpleUser.getId());
-		Assert.assertEquals("Some People", simpleUser.getFirstName());
-		Assert.assertNull(simpleUser.getLastName());
+		Assertions.assertEquals("some", simpleUser.getId());
+		Assertions.assertEquals("Some People", simpleUser.getFirstName());
+		Assertions.assertNull(simpleUser.getLastName());
 	}
 }

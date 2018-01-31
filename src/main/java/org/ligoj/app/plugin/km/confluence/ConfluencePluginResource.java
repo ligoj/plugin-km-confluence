@@ -96,7 +96,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	/**
 	 * Jackson type reference for Confluence space
 	 */
-	private static final TypeReference<Map<String, Object>> TYPE_SPACE_REF = new TypeReference<Map<String, Object>>() {
+	private static final TypeReference<Map<String, Object>> TYPE_SPACE_REF = new TypeReference<>() {
 		// Nothing to override
 	};
 
@@ -290,7 +290,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 				"{\"results\":[],\"_links\":{}}");
 
 		// Build the result from JSON
-		final TypeReference<Map<String, Object>> typeReference = new TypeReference<Map<String, Object>>() {
+		final TypeReference<Map<String, Object>> typeReference = new TypeReference<>() {
 			// Nothing to override
 		};
 		final Map<String, Object> readValue = objectMapper.readValue(spacesAsJson, typeReference);
