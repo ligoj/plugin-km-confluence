@@ -123,7 +123,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void linkNoSpace() throws Exception {
+	public void linkNoSpace() {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
@@ -137,7 +137,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void validateSpaceNotFound() throws Exception {
+	public void validateSpaceNotFound() {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
@@ -164,7 +164,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void validateSpaceJSonError() throws Exception {
+	public void validateSpaceJSonError() {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
@@ -365,7 +365,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkStatusNotAccess() throws Exception {
+	public void checkStatusNotAccess() {
 		httpServer.stubFor(get(urlEqualTo("/forgotuserpassword.action")).willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 		httpServer.start();
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {

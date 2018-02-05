@@ -225,7 +225,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	@Override
-	public void link(final int subscription) throws Exception {
+	public void link(final int subscription) {
 		final Map<String, String> parameters = subscriptionResource.getParameters(subscription);
 
 		// Validate the space key
@@ -440,7 +440,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	@Override
-	public String getVersion(final Map<String, String> parameters) throws Exception {
+	public String getVersion(final Map<String, String> parameters) {
 		final String page = StringUtils.trimToEmpty(getConfluencePublicResource(parameters, "/forgotuserpassword.action"));
 		final String ajsMeta = "ajs-version-number\" content=";
 		final int versionIndex = Math.min(page.length(), page.indexOf(ajsMeta) + ajsMeta.length() + 1);
