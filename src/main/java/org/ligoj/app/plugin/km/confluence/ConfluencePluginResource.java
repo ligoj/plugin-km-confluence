@@ -121,7 +121,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	/**
 	 * Check the server is available.
 	 */
-	private void validateAccess(final Map<String, String> parameters) throws Exception {
+	private void validateAccess(final Map<String, String> parameters) {
 		if (getVersion(parameters) == null) {
 			throw new ValidationJsonException(PARAMETER_URL, "confluence-connection");
 		}
@@ -448,13 +448,13 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	@Override
-	public String getLastVersion() throws Exception {
+	public String getLastVersion() throws IOException {
 		// Get the download json from the default repository
 		return versionUtils.getLatestReleasedVersionName("https://jira.atlassian.com", "CONF");
 	}
 
 	@Override
-	public boolean checkStatus(final Map<String, String> parameters) throws Exception {
+	public boolean checkStatus(final Map<String, String> parameters) {
 		// Status is UP <=> Administration access is UP (if defined)
 		validateAccess(parameters);
 
@@ -472,7 +472,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	@Override
-	public SubscriptionStatusWithData checkSubscriptionStatus(final Map<String, String> parameters) throws Exception {
+	public SubscriptionStatusWithData checkSubscriptionStatus(final Map<String, String> parameters) throws IOException {
 		final SubscriptionStatusWithData data = new SubscriptionStatusWithData();
 		data.put("space", validateSpace(parameters));
 		return data;

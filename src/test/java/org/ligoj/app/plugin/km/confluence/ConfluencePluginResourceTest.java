@@ -97,14 +97,14 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void getLastVersion() throws Exception {
+	public void getLastVersion() throws IOException {
 		final String lastVersion = resource.getLastVersion();
 		Assertions.assertNotNull(lastVersion);
 		Assertions.assertTrue(lastVersion.compareTo("5.8.0") > 0);
 	}
 
 	@Test
-	public void link() throws Exception {
+	public void link() throws IOException {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
@@ -154,7 +154,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void validateSpace() throws Exception {
+	public void validateSpace() throws IOException {
 		prepareMockSpaceActivity();
 		httpServer.start();
 
@@ -182,7 +182,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void validateSpaceActivityDefaultImage() throws Exception {
+	public void validateSpaceActivityDefaultImage() throws IOException {
 		prepareMockSpace();
 		httpServer.stubFor(get(urlEqualTo("/plugins/recently-updated/changes.action?theme=social&pageSize=1&spaceKeys=SPACE"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
@@ -197,7 +197,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void validateSpaceActivityImageError() throws Exception {
+	public void validateSpaceActivityImageError() throws IOException {
 		prepareMockSpace();
 		httpServer.stubFor(get(urlEqualTo("/plugins/recently-updated/changes.action?theme=social&pageSize=1&spaceKeys=SPACE"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
@@ -214,7 +214,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void validateSpaceActivityNoImage() throws Exception {
+	public void validateSpaceActivityNoImage() throws IOException {
 		prepareMockSpace();
 
 		// Activity
@@ -236,7 +236,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkSubscriptionStatus() throws Exception {
+	public void checkSubscriptionStatus() throws IOException {
 		prepareMockSpaceActivity();
 		httpServer.start();
 		final SubscriptionStatusWithData checkSubscriptionStatus = resource
@@ -246,7 +246,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkSubscriptionStatusNoActivity() throws Exception {
+	public void checkSubscriptionStatusNoActivity() throws IOException {
 		prepareMockSpace();
 		httpServer.start();
 		final SubscriptionStatusWithData checkSubscriptionStatus = resource
@@ -284,7 +284,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void testCheckStatus() throws Exception {
+	public void checkStatus() throws IOException {
 		prepareMockVersion();
 
 		prepareMockHome();
@@ -298,7 +298,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkStatusNotAdmin() throws Exception {
+	public void checkStatusNotAdmin() throws IOException {
 		prepareMockVersion();
 
 		prepareMockHome();
@@ -315,7 +315,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkStatusNotAuthentication() throws Exception {
+	public void checkStatusNotAuthentication() throws IOException {
 		prepareMockVersion();
 
 		prepareMockHome();
@@ -327,7 +327,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkStatusNotAuthenticationBadLocation() throws Exception {
+	public void checkStatusNotAuthenticationBadLocation() throws IOException {
 		prepareMockVersion();
 
 		prepareMockHome();
@@ -348,7 +348,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void checkStatusNotAuthenticationNoLocation() throws Exception {
+	public void checkStatusNotAuthenticationNoLocation() throws IOException {
 		prepareMockVersion();
 
 		// Authentication
@@ -379,7 +379,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void findAllByName() throws Exception {
+	public void findAllByName() throws IOException {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
@@ -399,7 +399,7 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void findAllByNameNotFound() throws Exception {
+	public void findAllByNameNotFound() throws IOException {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
@@ -418,14 +418,14 @@ public class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	public void testFindSpacesByNameNoRight() throws Exception {
+	public void testFindSpacesByNameNoRight() throws IOException {
 		initSpringSecurityContext("any");
 		final List<Space> projects = resource.findAllByName("service:km:confluence:dig", "SPACE");
 		Assertions.assertEquals(0, projects.size());
 	}
 
 	@Test
-	public void findAllByNamePage2() throws Exception {
+	public void findAllByNamePage2() throws IOException {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
