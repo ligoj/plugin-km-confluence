@@ -97,7 +97,7 @@ define(['cascade'], function ($cascade) {
 			var spaces = data.spaces;
 			for (var index = 0; index < spaces.length; index++) {
 				var space = spaces[index];
-				$target.append($('<li><a target="blank" href="' + space.link[1].href + '"><i class="fa fa-chevron-right"></i>' + space.name + '</a></li>'));
+				$target.append($('<li><a target="blank" href="' + space.link[1].href + '"><i class="fas fa-chevron-right"></i>' + space.name + '</a></li>'));
 			}
 		}
 	};
