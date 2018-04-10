@@ -9,7 +9,7 @@
 [![Quality Gate](https://sonarcloud.io/api/badges/gate?key=org.ligoj.plugin:plugin-km-confluence)](https://sonarcloud.io/dashboard/index/org.ligoj.plugin:plugin-km-confluence)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fb8a9ec5ff6c47828d8da8e52fb78e08)](https://www.codacy.com/app/ligoj/plugin-km-confluence?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ligoj/plugin-km-confluence&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/ligoj/plugin-km-confluence/badge)](https://www.codefactor.io/repository/github/ligoj/plugin-km-confluence)
-[![License](http://img.shields.io/:license-mit-blue.svg)](http://gus.mit-license.org/)
+[![License](http://img.shields.io/:license-mit-blue.svg)](http://fabdouglas.mit-license.org/)
 
 [Ligoj](https://github.com/ligoj/ligoj) Confluence plugin, and extending [Knowledge plugin](https://github.com/ligoj/plugin-km)
 Provides the following features :
