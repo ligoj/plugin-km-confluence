@@ -6,7 +6,7 @@
 [![Build Status](https://semaphoreci.com/api/v1/ligoj/plugin-km-confluence/branches/master/shields_badge.svg)](https://semaphoreci.com/ligoj/plugin-km-confluence)
 [![Build Status](https://ci.appveyor.com/api/projects/status/rv2eugyjk75ea5xb/branch/master?svg=true)](https://ci.appveyor.com/project/ligoj/plugin-km-confluence/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/ligoj/plugin-km-confluence/badge.svg?branch=master)](https://coveralls.io/github/ligoj/plugin-km-confluence?branch=master)
-[![Quality Gate](https://sonarcloud.io/api/badges/gate?key=org.ligoj.plugin:plugin-km-confluence)](https://sonarcloud.io/dashboard/index/org.ligoj.plugin:plugin-km-confluence)
+[![Quality Gate](https://sonarcloud.io/api/project_badges/measure?metric=alert_status&project=org.ligoj.plugin:plugin-km-confluence)](https://sonarcloud.io/dashboard/index/org.ligoj.plugin:plugin-km-confluence)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/fb8a9ec5ff6c47828d8da8e52fb78e08)](https://www.codacy.com/app/ligoj/plugin-km-confluence?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ligoj/plugin-km-confluence&amp;utm_campaign=Badge_Grade)
 [![CodeFactor](https://www.codefactor.io/repository/github/ligoj/plugin-km-confluence/badge)](https://www.codefactor.io/repository/github/ligoj/plugin-km-confluence)
 [![License](http://img.shields.io/:license-mit-blue.svg)](http://fabdouglas.mit-license.org/)
