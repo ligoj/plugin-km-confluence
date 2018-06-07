@@ -1,3 +1,6 @@
+/*
+ * Licensed under MIT (https://github.com/ligoj/ligoj/blob/master/LICENSE)
+ */
 define({
 	'service:km:confluence:space': 'Espace',
 	'service:km:confluence:url': 'URL',
