@@ -1,6 +1,6 @@
 package org.ligoj.app.plugin.km.confluence;
 
-import org.ligoj.bootstrap.core.model.AbstractNamedBusinessEntity;
+import org.ligoj.bootstrap.core.NamedBean;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -10,7 +10,12 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class Space extends AbstractNamedBusinessEntity<String> {
+public class Space extends NamedBean<String> {
+
+	/**
+	 * SID
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The last activity on Confluence.

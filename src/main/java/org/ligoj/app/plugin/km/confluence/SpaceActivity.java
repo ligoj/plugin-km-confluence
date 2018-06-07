@@ -1,5 +1,7 @@
 package org.ligoj.app.plugin.km.confluence;
 
+import java.io.Serializable;
+
 import org.ligoj.app.iam.SimpleUser;
 
 import lombok.Getter;
@@ -10,7 +12,12 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class SpaceActivity {
+public class SpaceActivity implements Serializable {
+
+	/**
+	 * SID
+	 */
+	private static final long serialVersionUID = 1L;
 
 	/**
 	 * The raw moment as Confluence has calculated, translated into the locale
