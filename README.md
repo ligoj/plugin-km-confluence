@@ -2,7 +2,6 @@
 
 [![Build Status](https://travis-ci.org/ligoj/plugin-km-confluence.svg?branch=master)](https://travis-ci.org/ligoj/plugin-km-confluence)
 [![Build Status](https://circleci.com/gh/ligoj/plugin-km-confluence.svg?style=svg)](https://circleci.com/gh/ligoj/plugin-km-confluence)
-[![Build Status](https://codeship.com/projects/5c23e6a0-0034-0135-2257-76737245ebb2/status?branch=master)](https://codeship.com/projects/212500)
 [![Build Status](https://semaphoreci.com/api/v1/ligoj/plugin-km-confluence/branches/master/shields_badge.svg)](https://semaphoreci.com/ligoj/plugin-km-confluence)
 [![Build Status](https://ci.appveyor.com/api/projects/status/rv2eugyjk75ea5xb/branch/master?svg=true)](https://ci.appveyor.com/project/ligoj/plugin-km-confluence/branch/master)
 [![Coverage Status](https://coveralls.io/repos/github/ligoj/plugin-km-confluence/badge.svg?branch=master)](https://coveralls.io/github/ligoj/plugin-km-confluence?branch=master)

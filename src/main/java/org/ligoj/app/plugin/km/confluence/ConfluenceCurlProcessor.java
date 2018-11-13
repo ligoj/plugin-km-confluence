@@ -3,9 +3,9 @@
  */
 package org.ligoj.app.plugin.km.confluence;
 
-import org.ligoj.app.resource.plugin.CurlProcessor;
-import org.ligoj.app.resource.plugin.CurlRequest;
-import org.ligoj.app.resource.plugin.HttpResponseCallback;
+import org.ligoj.bootstrap.core.curl.CurlProcessor;
+import org.ligoj.bootstrap.core.curl.CurlRequest;
+import org.ligoj.bootstrap.core.curl.HttpResponseCallback;
 
 /**
  * Confluence Curl processor.

@@ -3,7 +3,7 @@
  */
 package org.ligoj.app.plugin.km.confluence;
 
-import org.ligoj.app.resource.plugin.OnlyRedirectHttpResponseCallback;
+import org.ligoj.bootstrap.core.curl.OnlyRedirectHttpResponseCallback;
 
 /**
  * Confluence login response handler.
