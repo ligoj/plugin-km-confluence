@@ -133,30 +133,33 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	/**
 	 * Prepare an authenticated connection to Confluence
 	 */
-	protected void authenticate(final Map<String, String> parameters, final CurlProcessor processor) {
+	private void authenticate(final Map<String, String> parameters, final CurlProcessor processor) {
 		final String user = parameters.get(PARAMETER_USER);
 		final String password = StringUtils.trimToEmpty(parameters.get(PARAMETER_PASSWORD));
 		final String url = StringUtils.appendIfMissing(parameters.get(PARAMETER_URL), "/") + "dologin.action";
 		final List<CurlRequest> requests = new ArrayList<>();
 		requests.add(new CurlRequest(HttpMethod.GET, url, null));
-		requests.add(new CurlRequest(HttpMethod.POST, url,
-				"os_username=" + user + "&os_password=" + password + "&os_destination=&atl_token=&login=Connexion",
-				ConfluenceCurlProcessor.LOGIN_CALLBACK, "Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"));
+		requests.add(
+				new CurlRequest(HttpMethod.POST, url,
+						"os_username=" + user + "&os_password=" + password
+								+ "&os_destination=&atl_token=&login=Connexion",
+						ConfluenceCurlProcessor.LOGIN_CALLBACK,
+						"Accept:text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8"));
 		if (!processor.process(requests)) {
 			throw new ValidationJsonException(PARAMETER_URL, "confluence-login", parameters.get(PARAMETER_USER));
 		}
 	}
 
 	/**
-	 * Validate the administration connectivity. Expect an authenticated
-	 * connection.
+	 * Validate the administration connectivity. Expect an authenticated connection.
 	 */
 	private void validateAdminAccess(final Map<String, String> parameters, final CurlProcessor processor) {
 		final List<CurlRequest> requests = new ArrayList<>();
 
 		// Request plugins access
 		final String url = parameters.get(PARAMETER_URL);
-		requests.add(new CurlRequest(HttpMethod.GET, StringUtils.appendIfMissing(url, "/") + "plugins/servlet/upm", null));
+		requests.add(
+				new CurlRequest(HttpMethod.GET, StringUtils.appendIfMissing(url, "/") + "plugins/servlet/upm", null));
 		if (!processor.process(requests)) {
 			throw new ValidationJsonException(PARAMETER_URL, "confluence-admin", parameters.get(PARAMETER_USER));
 		}
@@ -165,9 +168,9 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	/**
 	 * Validate the space configuration and return the corresponding details.
 	 * 
-	 * @param parameters
-	 *            the space parameters.
+	 * @param parameters the space parameters.
 	 * @return Space's details.
+	 * @throws IOException When the space content cannot be read.
 	 */
 	protected Space validateSpace(final Map<String, String> parameters) throws IOException {
 		final String baseUrl = StringUtils.removeEnd(parameters.get(PARAMETER_URL), "/");
@@ -203,7 +206,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	/**
 	 * Validate the space configuration and return the corresponding details.
 	 */
-	protected CurlRequest[] validateSpaceInternal(final Map<String, String> parameters, final String... partialRequests) {
+	private CurlRequest[] validateSpaceInternal(final Map<String, String> parameters, final String... partialRequests) {
 		final String url = StringUtils.removeEnd(parameters.get(PARAMETER_URL), "/");
 		final String space = ObjectUtils.defaultIfNull(parameters.get(PARAMETER_SPACE), "0");
 		final CurlRequest[] result = new CurlRequest[partialRequests.length];
@@ -242,14 +245,12 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	/**
-	 * Find the spaces matching to the given criteria. Look into space key, and
-	 * space name.
+	 * Find the spaces matching to the given criteria. Look into space key, and space name.
 	 * 
-	 * @param node
-	 *            the node to be tested with given parameters.
-	 * @param criteria
-	 *            the search criteria.
+	 * @param node     the node to be tested with given parameters.
+	 * @param criteria the search criteria.
 	 * @return Matching spaces, ordered by space name, not the the key.
+	 * @throws IOException When the space content cannot be read.
 	 */
 	@GET
 	@Path("{node}/{criteria}")
@@ -274,19 +275,15 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	/**
-	 * Find the spaces matching to the given criteria. Look into space key, and
-	 * space name.
+	 * Find the spaces matching to the given criteria. Look into space key, and space name.
 	 * 
-	 * @param parameters
-	 *            the node parameters.
-	 * @param criteria
-	 *            the search criteria.
-	 * @param start
-	 *            the cursor position.
+	 * @param parameters the node parameters.
+	 * @param criteria   the search criteria.
+	 * @param start      the cursor position.
 	 * @return <code>true</code> when there are more spaces to fetch.
 	 */
-	private boolean addAllByName(final Map<String, String> parameters, final String criteria, final List<Space> result, final int start)
-			throws IOException {
+	private boolean addAllByName(final Map<String, String> parameters, final String criteria, final List<Space> result,
+			final int start) throws IOException {
 		// The result should be JSON, otherwise, an empty result is mocked
 		final String spacesAsJson = StringUtils.defaultString(
 				getConfluenceResource(parameters, "/rest/api/space?type=global&limit=100&start=" + start),
@@ -309,7 +306,8 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 			final Space space = toSpaceLight(spaceRaw);
 
 			// Check the values of this project
-			if (format.format(space.getName()).contains(formatCriteria) || format.format(space.getId()).contains(formatCriteria)) {
+			if (format.format(space.getName()).contains(formatCriteria)
+					|| format.format(space.getId()).contains(formatCriteria)) {
 				result.add(space);
 			}
 		}
@@ -329,8 +327,8 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	/**
 	 * Map API JSON Space and history values to a bean.
 	 */
-	private Space toSpace(final String baseUrl, final Map<String, Object> spaceRaw, final String history, final CurlProcessor processor)
-			throws MalformedURLException {
+	private Space toSpace(final String baseUrl, final Map<String, Object> spaceRaw, final String history,
+			final CurlProcessor processor) throws MalformedURLException {
 		final Space space = toSpaceLight(spaceRaw);
 		final String hostUrl = StringUtils.removeEnd(baseUrl, new java.net.URL(baseUrl).getPath());
 
@@ -367,16 +365,11 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	/**
-	 * Search the given user name using IAM, and if not found use the resolved
-	 * Confluence display name.
+	 * Search the given user name using IAM, and if not found use the resolved Confluence display name.
 	 * 
-	 * @param login
-	 *            The user login, as requested to IAM.
-	 * @param displayName
-	 *            The resolved Confluence display name, used when the user has
-	 *            not been found in IAM.
-	 * @return A {@link SimpleUser} instance representing at best effort the
-	 *         requested user.
+	 * @param login       The user login, as requested to IAM.
+	 * @param displayName The resolved Confluence display name, used when the user has not been found in IAM.
+	 * @return A {@link SimpleUser} instance representing at best effort the requested user.
 	 */
 	protected SimpleUser toSimpleUser(final String login, final String displayName) {
 		return Optional.ofNullable(getUser(login)).map(u -> {
@@ -395,38 +388,33 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	/**
 	 * Request IAM provider to get user details.
 	 * 
-	 * @param login
-	 *            The requested user login.
-	 * @return Either the resolved instance, either <code>null</code> when not
-	 *         found.
+	 * @param login The requested user login.
+	 * @return Either the resolved instance, either <code>null</code> when not found.
 	 */
 	protected SimpleUser getUser(final String login) {
 		return iamProvider[0].getConfiguration().getUserRepository().findById(login);
 	}
 
 	/**
-	 * Return a Confluence's resource. Return <code>null</code> when the
-	 * resource is not found.
+	 * Return a Confluence's resource. Return <code>null</code> when the resource is not found.
 	 */
-	protected String getConfluencePublicResource(final Map<String, String> parameters, final String resource) {
+	private String getConfluencePublicResource(final Map<String, String> parameters, final String resource) {
 		return getConfluenceResource(new CurlProcessor(), parameters.get(PARAMETER_URL), resource);
 	}
 
 	/**
-	 * Return a Confluence's resource after an authentication. Return
-	 * <code>null</code> when the resource is not found.
+	 * Return a Confluence's resource after an authentication. Return <code>null</code> when the resource is not found.
 	 */
-	protected String getConfluenceResource(final Map<String, String> parameters, final String resource) {
+	private String getConfluenceResource(final Map<String, String> parameters, final String resource) {
 		final ConfluenceCurlProcessor processor = new ConfluenceCurlProcessor();
 		authenticate(parameters, processor);
 		return getConfluenceResource(processor, parameters.get(PARAMETER_URL), resource);
 	}
 
 	/**
-	 * Return a Jenkins's resource. Return <code>null</code> when the resource
-	 * is not found.
+	 * Return a Jenkins's resource. Return <code>null</code> when the resource is not found.
 	 */
-	protected String getConfluenceResource(final CurlProcessor processor, final String url, final String resource) {
+	private String getConfluenceResource(final CurlProcessor processor, final String url, final String resource) {
 		// Get the resource using the preempted authentication
 		final CurlRequest request = new CurlRequest(HttpMethod.GET, StringUtils.removeEnd(url, "/") + resource, null);
 		request.setSaveResponse(true);
@@ -444,10 +432,12 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 
 	@Override
 	public String getVersion(final Map<String, String> parameters) {
-		final String page = StringUtils.trimToEmpty(getConfluencePublicResource(parameters, "/forgotuserpassword.action"));
+		final String page = StringUtils
+				.trimToEmpty(getConfluencePublicResource(parameters, "/forgotuserpassword.action"));
 		final String ajsMeta = "ajs-version-number\" content=";
 		final int versionIndex = Math.min(page.length(), page.indexOf(ajsMeta) + ajsMeta.length() + 1);
-		return StringUtils.trimToNull(page.substring(versionIndex, Math.max(versionIndex, page.indexOf('\"', versionIndex))));
+		return StringUtils
+				.trimToNull(page.substring(versionIndex, Math.max(versionIndex, page.indexOf('\"', versionIndex))));
 	}
 
 	@Override

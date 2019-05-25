@@ -33,7 +33,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ContextConfiguration(locations = "classpath:/META-INF/spring/application-context-test.xml")
 @Rollback
 @Transactional
-public class KmResourceTest extends AbstractAppTest {
+class KmResourceTest extends AbstractAppTest {
 
 	@Autowired
 	private KmResource resource;
@@ -45,7 +45,7 @@ public class KmResourceTest extends AbstractAppTest {
 	private NodeRepository nodeRepository;
 
 	@BeforeEach
-	public void prepareData() throws IOException {
+	void prepareData() throws IOException {
 		// Only with Spring context
 		persistEntities("csv",
 				new Class[] { Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class },
@@ -56,7 +56,7 @@ public class KmResourceTest extends AbstractAppTest {
 	}
 
 	@Test
-	public void create() throws Exception {
+	void create() throws Exception {
 		final Project project = new Project();
 		project.setName("TEST");
 		project.setPkey("test");
