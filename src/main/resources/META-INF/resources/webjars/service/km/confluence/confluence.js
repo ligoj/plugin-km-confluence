@@ -26,7 +26,7 @@ define(['cascade'], function ($cascade) {
 		 * Render Confluence data.
 		 */
 		renderFeatures: function (subscription) {
-			var result = current.$super('renderServicelink')('home', subscription.parameters['service:km:confluence:url'] + '/display/' + encodeURIComponent(subscription.parameters['service:km:confluence:space']), 'service:km:confluence:space', null, ' target="_blank"');
+			var result = current.$super('renderServiceLink')('home', subscription.parameters['service:km:confluence:url'] + '/display/' + encodeURIComponent(subscription.parameters['service:km:confluence:space']), 'service:km:confluence:space', null, ' target="_blank"');
 			// Help
 			result += current.$super('renderServiceHelpLink')(subscription.parameters, 'service:km:help');
 			return result;
