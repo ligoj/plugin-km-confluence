@@ -13,10 +13,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.HttpStatus;
+import org.apache.hc.core5.http.HttpStatus;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -69,12 +69,12 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		// Only with Spring context
 		persistSystemEntities();
 		persistEntities("csv",
-				new Class[] { Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class, DelegateNode.class },
-				StandardCharsets.UTF_8.name());
-		this.subscription = getSubscription("gStack");
+				new Class[]{Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class, DelegateNode.class},
+				StandardCharsets.UTF_8);
+		this.subscription = getSubscription("Jupiter");
 
 		// Coverage only
-		resource.getKey();
+		Assertions.assertEquals("service:km:confluence", resource.getKey());
 	}
 
 	/**
@@ -134,9 +134,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		// Find space -> not found
 		httpServer.stubFor(get(urlEqualTo("/rest/api/space/SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 		httpServer.start();
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.link(this.subscription);
-		}), "service:km:confluence:space", "confluence-space");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.link(this.subscription)), "service:km:confluence:space", "confluence-space");
 	}
 
 	@Test
@@ -151,9 +149,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "0");
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.validateSpace(parameters);
-		}), ConfluencePluginResource.PARAMETER_SPACE, "confluence-space");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.validateSpace(parameters)), ConfluencePluginResource.PARAMETER_SPACE, "confluence-space");
 	}
 
 	@Test
@@ -179,9 +175,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 
 		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "SPACE");
-		Assertions.assertThrows(IOException.class, () -> {
-			resource.validateSpace(parameters);
-		});
+		Assertions.assertThrows(IOException.class, () -> resource.validateSpace(parameters));
 	}
 
 	@Test
@@ -324,9 +318,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
 		httpServer.start();
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
-		}), ConfluencePluginResource.PARAMETER_URL, "confluence-login");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription))), ConfluencePluginResource.PARAMETER_URL, "confluence-login");
 	}
 
 	@Test
@@ -337,9 +329,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "dologin.action")));
 		httpServer.start();
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
-		}), ConfluencePluginResource.PARAMETER_URL, "confluence-login");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription))), ConfluencePluginResource.PARAMETER_URL, "confluence-login");
 	}
 
 	private void prepareMockVersion() throws IOException {
@@ -358,9 +348,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		prepareMockHome();
 		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY)));
 		httpServer.start();
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
-		}), ConfluencePluginResource.PARAMETER_URL, "confluence-login");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription))), ConfluencePluginResource.PARAMETER_URL, "confluence-login");
 	}
 
 	private void prepareMockHome() {
@@ -371,9 +359,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	void checkStatusNotAccess() {
 		httpServer.stubFor(get(urlEqualTo("/forgotuserpassword.action")).willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 		httpServer.start();
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription));
-		}), ConfluencePluginResource.PARAMETER_URL, "confluence-connection");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription))), ConfluencePluginResource.PARAMETER_URL, "confluence-connection");
 	}
 
 	@Test
@@ -484,7 +470,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	void toSimpleUserUnknown() {
 		final ConfluencePluginResource resource = new ConfluencePluginResource();
-		resource.iamProvider = new IamProvider[] { Mockito.mock(IamProvider.class) };
+		resource.iamProvider = new IamProvider[]{Mockito.mock(IamProvider.class)};
 		final IamConfiguration iamConfiguration = Mockito.mock(IamConfiguration.class);
 		Mockito.when(resource.iamProvider[0].getConfiguration()).thenReturn(iamConfiguration);
 		Mockito.when(iamConfiguration.getUserRepository()).thenReturn(Mockito.mock(IUserRepository.class));

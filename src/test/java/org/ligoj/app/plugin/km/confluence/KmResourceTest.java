@@ -6,7 +6,7 @@ package org.ligoj.app.plugin.km.confluence;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
-import javax.transaction.Transactional;
+import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,11 +48,11 @@ class KmResourceTest extends AbstractAppTest {
 	void prepareData() throws IOException {
 		// Only with Spring context
 		persistEntities("csv",
-				new Class[] { Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class },
-				StandardCharsets.UTF_8.name());
+				new Class[]{Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class},
+				StandardCharsets.UTF_8);
 
 		// Coverage only
-		resource.getKey();
+		Assertions.assertEquals("service:km:confluence", resource.getKey());
 	}
 
 	@Test
