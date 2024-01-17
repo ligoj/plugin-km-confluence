@@ -69,7 +69,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		// Only with Spring context
 		persistSystemEntities();
 		persistEntities("csv",
-				new Class[]{Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class, DelegateNode.class},
+				new Class<?>[]{Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class, DelegateNode.class},
 				StandardCharsets.UTF_8);
 		this.subscription = getSubscription("Jupiter");
 
@@ -306,9 +306,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		httpServer.stubFor(get(urlEqualTo("/plugins/servlet/upm"))
 				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 		httpServer.start();
-		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> {
-			Assertions.assertTrue(resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription)));
-		}), ConfluencePluginResource.PARAMETER_URL, "confluence-admin");
+		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> Assertions.assertTrue(resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription)))), ConfluencePluginResource.PARAMETER_URL, "confluence-admin");
 	}
 
 	@Test
@@ -430,9 +428,9 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 
 		final List<Space> projects = resource.findAllByName("service:km:confluence:dig", "xxx");
 		Assertions.assertEquals(1, projects.size());
-		Assertions.assertEquals("XXX", projects.get(0).getId());
-		Assertions.assertEquals("XXX - Full Name", projects.get(0).getName());
-		Assertions.assertNull(projects.get(0).getActivity());
+		Assertions.assertEquals("XXX", projects.getFirst().getId());
+		Assertions.assertEquals("XXX - Full Name", projects.getFirst().getName());
+		Assertions.assertNull(projects.getFirst().getActivity());
 	}
 
 	private void checkSpace(final Space space) {
