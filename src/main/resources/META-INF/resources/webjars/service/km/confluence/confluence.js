@@ -81,7 +81,7 @@ define(['cascade'], function ($cascade) {
 				dataType: 'json',
 				url: configuration.node.parameters['service:km:confluence:url'] + '/' + configuration.parameters.query,
 				type: 'GET',
-				crosdomain: true,
+				crossdomain: true,
 				global: false,
 				success: function (data) {
 					current.fillConfluenceLinks(data, $links);
