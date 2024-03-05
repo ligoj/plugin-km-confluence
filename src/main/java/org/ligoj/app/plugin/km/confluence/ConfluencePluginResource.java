@@ -3,23 +3,12 @@
  */
 package org.ligoj.app.plugin.km.confluence;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.text.Format;
-import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.GET;
-import jakarta.ws.rs.HttpMethod;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.PathParam;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.xml.bind.DatatypeConverter;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,8 +30,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import java.io.IOException;
+import java.net.URI;
+import java.text.Format;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Confluence KM resource.
@@ -322,9 +315,9 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	 * Map API JSON Space and history values to a bean.
 	 */
 	private Space toSpace(final String baseUrl, final Map<String, Object> spaceRaw, final String history,
-			final CurlProcessor processor) throws MalformedURLException {
+			final CurlProcessor processor) {
 		final Space space = toSpaceLight(spaceRaw);
-		final String hostUrl = StringUtils.removeEnd(baseUrl, new java.net.URL(baseUrl).getPath());
+		final String hostUrl = StringUtils.removeEnd(baseUrl, URI.create(baseUrl).getPath());
 
 		// Check the activity if available
 		final Matcher matcher = ACTIVITY_PATTERN.matcher(StringUtils.defaultString(history));
