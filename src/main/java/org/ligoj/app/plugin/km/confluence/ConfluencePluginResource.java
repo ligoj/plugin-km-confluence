@@ -12,6 +12,7 @@ import jakarta.xml.bind.DatatypeConverter;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.ligoj.app.api.SubscriptionStatusWithData;
 import org.ligoj.app.dao.NodeRepository;
 import org.ligoj.app.iam.IamProvider;
@@ -124,7 +125,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	private void authenticate(final Map<String, String> parameters, final CurlProcessor processor) {
 		final var user = parameters.get(PARAMETER_USER);
 		final var password = StringUtils.trimToEmpty(parameters.get(PARAMETER_PASSWORD));
-		final var url = StringUtils.appendIfMissing(parameters.get(PARAMETER_URL), "/") + "dologin.action";
+		final var url = Strings.CS.appendIfMissing(parameters.get(PARAMETER_URL), "/") + "dologin.action";
 		final var requests = new ArrayList<CurlRequest>();
 		requests.add(new CurlRequest(HttpMethod.GET, url, null));
 		requests.add(
@@ -147,7 +148,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 		// Request plugins access
 		final String url = parameters.get(PARAMETER_URL);
 		requests.add(
-				new CurlRequest(HttpMethod.GET, StringUtils.appendIfMissing(url, "/") + "plugins/servlet/upm", null));
+				new CurlRequest(HttpMethod.GET, Strings.CS.appendIfMissing(url, "/") + "plugins/servlet/upm", null));
 		if (!processor.process(requests)) {
 			throw new ValidationJsonException(PARAMETER_URL, "confluence-admin", parameters.get(PARAMETER_USER));
 		}
@@ -161,7 +162,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	 * @throws IOException When the space content cannot be read.
 	 */
 	protected Space validateSpace(final Map<String, String> parameters) throws IOException {
-		final String baseUrl = StringUtils.removeEnd(parameters.get(PARAMETER_URL), "/");
+		final String baseUrl = Strings.CS.removeEnd(parameters.get(PARAMETER_URL), "/");
 
 		CurlRequest[] requests = null;
 
@@ -195,8 +196,8 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	 * Validate the space configuration and return the corresponding details.
 	 */
 	private CurlRequest[] validateSpaceInternal(final Map<String, String> parameters, final String... partialRequests) {
-		final String url = StringUtils.removeEnd(parameters.get(PARAMETER_URL), "/");
-		final String space = ObjectUtils.defaultIfNull(parameters.get(PARAMETER_SPACE), "0");
+		final String url = Strings.CS.removeEnd(parameters.get(PARAMETER_URL), "/");
+		final String space = ObjectUtils.getIfNull(parameters.get(PARAMETER_SPACE), "0");
 		final CurlRequest[] result = new CurlRequest[partialRequests.length];
 		for (int i = 0; i < partialRequests.length; i++) {
 			result[i] = new CurlRequest(HttpMethod.GET, url + partialRequests[i] + space, null);
@@ -317,7 +318,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	private Space toSpace(final String baseUrl, final Map<String, Object> spaceRaw, final String history,
 			final CurlProcessor processor) {
 		final Space space = toSpaceLight(spaceRaw);
-		final String hostUrl = StringUtils.removeEnd(baseUrl, URI.create(baseUrl).getPath());
+		final String hostUrl = Strings.CS.removeEnd(baseUrl, URI.create(baseUrl).getPath());
 
 		// Check the activity if available
 		final Matcher matcher = ACTIVITY_PATTERN.matcher(StringUtils.defaultString(history));
@@ -403,7 +404,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	 */
 	private String getConfluenceResource(final CurlProcessor processor, final String url, final String resource) {
 		// Get the resource using the preempted authentication
-		final CurlRequest request = new CurlRequest(HttpMethod.GET, StringUtils.removeEnd(url, "/") + resource, null);
+		final CurlRequest request = new CurlRequest(HttpMethod.GET, Strings.CS.removeEnd(url, "/") + resource, null);
 		request.setSaveResponse(true);
 
 		// Execute the requests
