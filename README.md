@@ -1,4 +1,4 @@
-# :link: Ligoj Confluence plugin [![Maven Central](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-km-confluence/badge.svg)](https://maven-badges.herokuapp.com/maven-central/org.ligoj.plugin/plugin-km-confluence)
+# :link: Ligoj Confluence plugin ![Maven Central](https://img.shields.io/maven-central/v/org.ligoj.plugin/plugin-km-confluence)
 
 [![Build Status](https://travis-ci.org/ligoj/plugin-km-confluence.svg?branch=master)](https://travis-ci.org/ligoj/plugin-km-confluence)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=org.ligoj.plugin%3Aplugin-km-confluence&metric=coverage)](https://sonarcloud.io/dashboard?id=org.ligoj.plugin%3Aplugin-km-confluence)
