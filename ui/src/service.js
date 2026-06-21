@@ -10,8 +10,7 @@
  * (sidebar space-links list, a cross-domain fetch) read live data and are
  * deferred. Kept free of Vue SFC imports for unit testing.
  */
-import { h } from 'vue'
-import { VBtn, VChip, VIcon, useI18nStore } from '@ligoj/host'
+import { renderServiceLink, renderDetailsChip, useI18nStore } from '@ligoj/host'
 
 const PARAM_URL = 'service:km:confluence:url'
 const PARAM_SPACE = 'service:km:confluence:space'
@@ -22,32 +21,14 @@ function renderFeatures(subscription) {
   const space = params?.[PARAM_SPACE]
   if (!url || !space) return []
   const { t } = useI18nStore()
-  return [
-    h(
-      VBtn,
-      {
-        icon: true,
-        size: 'small',
-        variant: 'text',
-        href: `${url.replace(/\/$/, '')}/display/${encodeURIComponent(space)}`,
-        target: '_blank',
-        rel: 'noopener noreferrer',
-        title: t('service:km:confluence:space'),
-      },
-      () => h(VIcon, { size: 'small' }, () => 'mdi-home'),
-    ),
-  ]
+  return [renderServiceLink({ icon: 'mdi-home', href: `${url.replace(/\/$/, '')}/display/${encodeURIComponent(space)}`, title: t('service:km:confluence:space') })]
 }
 
 function renderDetailsKey(subscription) {
   const space = subscription?.parameters?.[PARAM_SPACE]
   if (!space) return null
   const { t } = useI18nStore()
-  return h(
-    VChip,
-    { size: 'small', variant: 'tonal', class: 'mr-1', title: t('service:km:confluence:space') },
-    () => [h(VIcon, { start: true, size: 'small' }, () => 'mdi-book-open-page-variant'), ' ', String(space)],
-  )
+  return renderDetailsChip({ icon: 'mdi-book-open-page-variant', text: space, title: t('service:km:confluence:space') })
 }
 
 export default { renderFeatures, renderDetailsKey }
