@@ -68,9 +68,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	void prepareData() throws IOException {
 		// Only with Spring context
 		persistSystemEntities();
-		persistEntities("csv",
-				new Class<?>[]{Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class, DelegateNode.class},
-				StandardCharsets.UTF_8);
+		persistEntities("csv", new Class<?>[]{Node.class, Parameter.class, Project.class, Subscription.class, ParameterValue.class, DelegateNode.class}, StandardCharsets.UTF_8);
 		this.subscription = getSubscription("Jupiter");
 
 		// Coverage only
@@ -95,13 +93,13 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		prepareMockVersion();
 		httpServer.start();
 
-		final String version = resource.getVersion(subscription);
+		final var version = resource.getVersion(subscription);
 		Assertions.assertEquals("5.7.5", version);
 	}
 
 	@Test
 	void getLastVersion() throws IOException {
-		final String lastVersion = resource.getLastVersion();
+		final var lastVersion = resource.getLastVersion();
 		Assertions.assertNotNull(lastVersion);
 		Assertions.assertTrue(lastVersion.compareTo("5.8.0") > 0);
 	}
@@ -109,13 +107,10 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	void link() throws IOException {
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Find space
-		httpServer.stubFor(get(urlEqualTo("/rest/api/space/SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-				.withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-space-SPACE.json").getInputStream(),
-						StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space/SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-space-SPACE.json").getInputStream(), StandardCharsets.UTF_8))));
 		httpServer.start();
 
 		// Invoke create for an already created entity, since for now, there is
@@ -128,8 +123,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	void linkNoSpace() {
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Find space -> not found
 		httpServer.stubFor(get(urlEqualTo("/rest/api/space/SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
@@ -140,14 +134,13 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	void validateSpaceNotFound() {
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Not find space
 		httpServer.stubFor(get(urlEqualTo("/rest/api/space/SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 		httpServer.start();
 
-		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
+		final var parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "0");
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.validateSpace(parameters)), ConfluencePluginResource.PARAMETER_SPACE, "confluence-space");
 	}
@@ -157,7 +150,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		prepareMockSpaceActivity();
 		httpServer.start();
 
-		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
+		final var parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "SPACE");
 		checkSpaceActivityAvatar(resource.validateSpace(parameters));
 	}
@@ -165,15 +158,13 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	void validateSpaceJSonError() {
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Find space -> JSON error
-		httpServer.stubFor(
-				get(urlEqualTo("/rest/api/space/SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("{error_json}")));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space/SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody("{error_json}")));
 		httpServer.start();
 
-		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
+		final var parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "SPACE");
 		Assertions.assertThrows(IOException.class, () -> resource.validateSpace(parameters));
 	}
@@ -181,31 +172,24 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	void validateSpaceActivityDefaultImage() throws IOException {
 		prepareMockSpace();
-		httpServer.stubFor(get(urlEqualTo("/plugins/recently-updated/changes.action?theme=social&pageSize=1&spaceKeys=SPACE"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
-						new ClassPathResource("mock-server/confluence/confluence-space-SPACE-changes-default-avatar.html").getInputStream(),
-						StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/plugins/recently-updated/changes.action?theme=social&pageSize=1&spaceKeys=SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-space-SPACE-changes-default-avatar.html").getInputStream(), StandardCharsets.UTF_8))));
 		httpServer.start();
 
-		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
+		final var parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "SPACE");
-		final Space space = resource.validateSpace(parameters);
+		final var space = resource.validateSpace(parameters);
 		Assertions.assertNull(checkSpaceActivity(space).getActivity().getAuthorAvatar());
 	}
 
 	@Test
 	void validateSpaceActivityImageError() throws IOException {
 		prepareMockSpace();
-		httpServer.stubFor(get(urlEqualTo("/plugins/recently-updated/changes.action?theme=social&pageSize=1&spaceKeys=SPACE"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-						.withBody(IOUtils.toString(
-								new ClassPathResource("mock-server/confluence/confluence-space-SPACE-changes.html").getInputStream(),
-								StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/plugins/recently-updated/changes.action?theme=social&pageSize=1&spaceKeys=SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-space-SPACE-changes.html").getInputStream(), StandardCharsets.UTF_8))));
 		httpServer.start();
 
-		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
+		final var parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "SPACE");
-		final Space space = resource.validateSpace(parameters);
+		final var space = resource.validateSpace(parameters);
 		checkSpaceActivity(space);
 		Assertions.assertNull(space.getActivity().getAuthorAvatar());
 	}
@@ -215,19 +199,15 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		prepareMockSpace();
 
 		// Activity
-		httpServer.stubFor(get(urlEqualTo("/plugins/recently-updated/changes.action?theme=social&pageSize=1&spaceKeys=SPACE"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-						.withBody(IOUtils.toString(
-								new ClassPathResource("mock-server/confluence/confluence-space-SPACE-changes.html").getInputStream(),
-								StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/plugins/recently-updated/changes.action?theme=social&pageSize=1&spaceKeys=SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-space-SPACE-changes.html").getInputStream(), StandardCharsets.UTF_8))));
 
 		// Avatar not found
 		httpServer.stubFor(get(urlEqualTo("/some/default.png")).willReturn(aResponse().withStatus(HttpStatus.SC_NOT_FOUND)));
 		httpServer.start();
 
-		final Map<String, String> parameters = pvResource.getNodeParameters("service:km:confluence:dig");
+		final var parameters = pvResource.getNodeParameters("service:km:confluence:dig");
 		parameters.put(ConfluencePluginResource.PARAMETER_SPACE, "SPACE");
-		final Space space = resource.validateSpace(parameters);
+		final var space = resource.validateSpace(parameters);
 		checkSpaceActivity(space);
 		Assertions.assertNull(space.getActivity().getAuthorAvatar());
 	}
@@ -236,8 +216,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	void checkSubscriptionStatus() throws IOException {
 		prepareMockSpaceActivity();
 		httpServer.start();
-		final SubscriptionStatusWithData checkSubscriptionStatus = resource
-				.checkSubscriptionStatus(subscriptionResource.getParametersNoCheck(subscription));
+		final var checkSubscriptionStatus = resource.checkSubscriptionStatus(subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(checkSubscriptionStatus.getStatus().isUp());
 		checkSpaceActivity((Space) checkSubscriptionStatus.getData().get("space"));
 	}
@@ -246,38 +225,29 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	void checkSubscriptionStatusNoActivity() throws IOException {
 		prepareMockSpace();
 		httpServer.start();
-		final SubscriptionStatusWithData checkSubscriptionStatus = resource
-				.checkSubscriptionStatus(subscriptionResource.getParametersNoCheck(subscription));
+		final var checkSubscriptionStatus = resource.checkSubscriptionStatus(subscriptionResource.getParametersNoCheck(subscription));
 		Assertions.assertTrue(checkSubscriptionStatus.getStatus().isUp());
-		final Space space = (Space) checkSubscriptionStatus.getData().get("space");
+		final var space = (Space) checkSubscriptionStatus.getData().get("space");
 		checkSpace(space);
 		Assertions.assertNull(space.getActivity());
 	}
 
 	private void prepareMockSpace() throws IOException {
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Find space
-		httpServer.stubFor(get(urlEqualTo("/rest/api/space/SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-				.withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-space-SPACE.json").getInputStream(),
-						StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space/SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-space-SPACE.json").getInputStream(), StandardCharsets.UTF_8))));
 	}
 
 	private void prepareMockSpaceActivity() throws IOException {
 		prepareMockSpace();
 
 		// Activity
-		httpServer.stubFor(get(urlEqualTo("/plugins/recently-updated/changes.action?theme=social&pageSize=1&spaceKeys=SPACE"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-						.withBody(IOUtils.toString(
-								new ClassPathResource("mock-server/confluence/confluence-space-SPACE-changes.html").getInputStream(),
-								StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/plugins/recently-updated/changes.action?theme=social&pageSize=1&spaceKeys=SPACE")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-space-SPACE-changes.html").getInputStream(), StandardCharsets.UTF_8))));
 
 		// Avatar
-		httpServer.stubFor(get(urlEqualTo("/some/some.png")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-				.withBody(IOUtils.toByteArray(new ClassPathResource("mock-server/confluence/default.png").getInputStream()))));
+		httpServer.stubFor(get(urlEqualTo("/some/some.png")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toByteArray(new ClassPathResource("mock-server/confluence/default.png").getInputStream()))));
 	}
 
 	@Test
@@ -285,8 +255,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		prepareMockVersion();
 
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Administration access
 		httpServer.stubFor(get(urlEqualTo("/plugins/servlet/upm")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)));
@@ -299,12 +268,10 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		prepareMockVersion();
 
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
 		// Administration access failed
-		httpServer.stubFor(get(urlEqualTo("/plugins/servlet/upm"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(get(urlEqualTo("/plugins/servlet/upm")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 		httpServer.start();
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> Assertions.assertTrue(resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription)))), ConfluencePluginResource.PARAMETER_URL, "confluence-admin");
 	}
@@ -324,18 +291,14 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 		prepareMockVersion();
 
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "dologin.action")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "dologin.action")));
 		httpServer.start();
 		MatcherUtil.assertThrows(Assertions.assertThrows(ValidationJsonException.class, () -> resource.checkStatus(subscriptionResource.getParametersNoCheck(subscription))), ConfluencePluginResource.PARAMETER_URL, "confluence-login");
 	}
 
 	private void prepareMockVersion() throws IOException {
 		// Version
-		httpServer.stubFor(get(urlEqualTo("/forgotuserpassword.action")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-				.withBody(IOUtils.toString(
-						new ClassPathResource("mock-server/confluence/confluence-forgotuserpassword.action").getInputStream(),
-						StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/forgotuserpassword.action")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-forgotuserpassword.action").getInputStream(), StandardCharsets.UTF_8))));
 	}
 
 	@Test
@@ -368,19 +331,13 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	void findAllByName() throws IOException {
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
-		httpServer.stubFor(get(urlEqualTo("/rest/api/space?type=global&limit=100&start=0"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
-						new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(), StandardCharsets.UTF_8))));
-		httpServer.stubFor(
-				get(urlEqualTo("/rest/api/space?type=global&limit=100&start=100")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-						.withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(),
-								StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space?type=global&limit=100&start=0")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(), StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space?type=global&limit=100&start=100")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(), StandardCharsets.UTF_8))));
 		httpServer.start();
 
-		final List<Space> projects = resource.findAllByName("service:km:confluence:dig", "p");
+		final var projects = resource.findAllByName("service:km:confluence:dig", "p");
 		Assertions.assertEquals(10, projects.size());
 		checkSpace(projects.get(4));
 	}
@@ -388,45 +345,33 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	@Test
 	void findAllByNameNotFound() throws IOException {
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
-		httpServer.stubFor(get(urlEqualTo("/rest/api/space?type=global&limit=100&start=0"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
-						new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(), StandardCharsets.UTF_8))));
-		httpServer.stubFor(
-				get(urlEqualTo("/rest/api/space?type=global&limit=100&start=100")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-						.withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(),
-								StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space?type=global&limit=100&start=0")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(), StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space?type=global&limit=100&start=100")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(), StandardCharsets.UTF_8))));
 		httpServer.start();
 
-		final List<Space> projects = resource.findAllByName("service:km:confluence:dig", "zzz");
+		final var projects = resource.findAllByName("service:km:confluence:dig", "zzz");
 		Assertions.assertTrue(projects.isEmpty());
 	}
 
 	@Test
 	void testFindSpacesByNameNoRight() throws IOException {
 		initSpringSecurityContext("any");
-		final List<Space> projects = resource.findAllByName("service:km:confluence:dig", "SPACE");
+		final var projects = resource.findAllByName("service:km:confluence:dig", "SPACE");
 		Assertions.assertEquals(0, projects.size());
 	}
 
 	@Test
 	void findAllByNamePage2() throws IOException {
 		prepareMockHome();
-		httpServer.stubFor(post(urlEqualTo("/dologin.action"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
+		httpServer.stubFor(post(urlEqualTo("/dologin.action")).willReturn(aResponse().withStatus(HttpStatus.SC_MOVED_TEMPORARILY).withHeader("Location", "/")));
 
-		httpServer.stubFor(get(urlEqualTo("/rest/api/space?type=global&limit=100&start=0"))
-				.willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(
-						new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(), StandardCharsets.UTF_8))));
-		httpServer.stubFor(
-				get(urlEqualTo("/rest/api/space?type=global&limit=100&start=100")).willReturn(aResponse().withStatus(HttpStatus.SC_OK)
-						.withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(),
-								StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space?type=global&limit=100&start=0")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-spaces.json").getInputStream(), StandardCharsets.UTF_8))));
+		httpServer.stubFor(get(urlEqualTo("/rest/api/space?type=global&limit=100&start=100")).willReturn(aResponse().withStatus(HttpStatus.SC_OK).withBody(IOUtils.toString(new ClassPathResource("mock-server/confluence/confluence-spaces2.json").getInputStream(), StandardCharsets.UTF_8))));
 		httpServer.start();
 
-		final List<Space> projects = resource.findAllByName("service:km:confluence:dig", "xxx");
+		final var projects = resource.findAllByName("service:km:confluence:dig", "xxx");
 		Assertions.assertEquals(1, projects.size());
 		Assertions.assertEquals("XXX", projects.getFirst().getId());
 		Assertions.assertEquals("XXX - Full Name", projects.getFirst().getName());
@@ -440,7 +385,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 
 	private Space checkSpaceActivity(final Space space) {
 		checkSpace(space);
-		final SpaceActivity activity = space.getActivity();
+		final var activity = space.getActivity();
 		Assertions.assertNotNull(activity);
 		Assertions.assertEquals("user1", activity.getAuthor().getId());
 		Assertions.assertEquals("updated 5 minutes ago", activity.getMoment());
@@ -451,7 +396,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 
 	private Space checkSpaceActivityAvatar(final Space space) {
 		checkSpaceActivity(space);
-		final SpaceActivity activity = space.getActivity();
+		final var activity = space.getActivity();
 		Assertions.assertTrue(activity.getAuthorAvatar().startsWith("data:image/png;base64,iVBORw0K"));
 		Assertions.assertEquals(3614, activity.getAuthorAvatar().length());
 		return space;
@@ -459,7 +404,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 
 	@Test
 	void toSimpleUser() {
-		final SimpleUser simpleUser = resource.toSimpleUser("some", "any");
+		final var simpleUser = resource.toSimpleUser("some", "any");
 		Assertions.assertEquals("some", simpleUser.getId());
 		Assertions.assertEquals("First", simpleUser.getFirstName());
 		Assertions.assertEquals("Last", simpleUser.getLastName());
@@ -467,12 +412,12 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 
 	@Test
 	void toSimpleUserUnknown() {
-		final ConfluencePluginResource resource = new ConfluencePluginResource();
+		final var resource = new ConfluencePluginResource();
 		resource.iamProvider = new IamProvider[]{Mockito.mock(IamProvider.class)};
-		final IamConfiguration iamConfiguration = Mockito.mock(IamConfiguration.class);
+		final var iamConfiguration = Mockito.mock(IamConfiguration.class);
 		Mockito.when(resource.iamProvider[0].getConfiguration()).thenReturn(iamConfiguration);
 		Mockito.when(iamConfiguration.getUserRepository()).thenReturn(Mockito.mock(IUserRepository.class));
-		final SimpleUser simpleUser = resource.toSimpleUser("some", "Some People");
+		final var simpleUser = resource.toSimpleUser("some", "Some People");
 		Assertions.assertEquals("some", simpleUser.getId());
 		Assertions.assertEquals("Some People", simpleUser.getFirstName());
 		Assertions.assertNull(simpleUser.getLastName());

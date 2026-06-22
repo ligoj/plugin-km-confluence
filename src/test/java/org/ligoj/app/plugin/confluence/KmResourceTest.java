@@ -52,20 +52,26 @@ class KmResourceTest extends AbstractAppTest {
 				StandardCharsets.UTF_8);
 
 		// Coverage only
-		Assertions.assertEquals("service:km:confluence", resource.getKey());
+		Assertions.assertEquals("service:km", resource.getKey());
+	}
+
+	@Test
+	void getKey() {
+		// Coverage only
+		Assertions.assertEquals("service:km",resource.getKey());
 	}
 
 	@Test
 	void create() throws Exception {
-		final Project project = new Project();
+		final var project = new Project();
 		project.setName("TEST");
 		project.setPkey("test");
 		em.persist(project);
 		em.flush();
 
-		final Subscription subscription = new Subscription();
+		final var subscription = new Subscription();
 		subscription.setProject(project);
-		subscription.setNode(nodeRepository.findOneExpected("service:km"));
+		subscription.setNode(nodeRepository.findOneExpected("service:km:confluence:dig"));
 		em.persist(subscription);
 		em.flush();
 		em.clear();
