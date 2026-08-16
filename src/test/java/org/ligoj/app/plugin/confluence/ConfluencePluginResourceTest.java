@@ -86,7 +86,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	void getLastVersion() throws IOException {
+	void getLastVersion() {
 		final var lastVersion = resource.getLastVersion();
 		Assertions.assertNotNull(lastVersion);
 		Assertions.assertTrue(lastVersion.compareTo("5.8.0") > 0);
@@ -312,7 +312,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	void findSpacesByNameNodeNotExists() throws IOException {
+	void findSpacesByNameNodeNotExists() {
 		Assertions.assertEquals(0, resource.findAllByName("service:km:confluence:any", "10000").size());
 	}
 
@@ -344,7 +344,7 @@ class ConfluencePluginResourceTest extends AbstractServerTest {
 	}
 
 	@Test
-	void testFindSpacesByNameNoRight() throws IOException {
+	void testFindSpacesByNameNoRight() {
 		initSpringSecurityContext("any");
 		final var projects = resource.findAllByName("service:km:confluence:dig", "SPACE");
 		Assertions.assertEquals(0, projects.size());

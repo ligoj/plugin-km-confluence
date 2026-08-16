@@ -3,8 +3,6 @@
  */
 package org.ligoj.app.plugin.confluence;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
@@ -30,8 +28,9 @@ import org.ligoj.bootstrap.core.validation.ValidationJsonException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.net.URI;
 import java.text.Format;
 import java.util.*;
@@ -66,7 +65,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	public static final String KEY = URL.replace('/', ':').substring(1);
 
 	/**
-	 * Web site URL
+	 * Website URL
 	 */
 	public static final String PARAMETER_URL = KEY + ":url";
 
@@ -159,9 +158,8 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	 *
 	 * @param parameters the space parameters.
 	 * @return Space's details.
-	 * @throws IOException When the space content cannot be read.
 	 */
-	protected Space validateSpace(final Map<String, String> parameters) throws IOException {
+	protected Space validateSpace(final Map<String, String> parameters) {
 		final String baseUrl = Strings.CS.removeEnd(parameters.get(PARAMETER_URL), "/");
 
 		CurlRequest[] requests = null;
@@ -183,7 +181,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	/**
-	 * CLose the related processor as needed.
+	 * Close the related processor as needed.
 	 */
 	private void closeQuietly(final CurlRequest[] requests) {
 		if (requests != null) {
@@ -239,13 +237,11 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	 * @param node     the node to be tested with given parameters.
 	 * @param criteria the search criteria.
 	 * @return Matching spaces, ordered by space name, not the key.
-	 * @throws IOException When the space content cannot be read.
 	 */
 	@GET
 	@Path("{node}/{criteria}")
 	@Consumes(MediaType.APPLICATION_JSON)
-	public List<Space> findAllByName(@PathParam("node") final String node, @PathParam("criteria") final String criteria)
-			throws IOException {
+	public List<Space> findAllByName(@PathParam("node") final String node, @PathParam("criteria") final String criteria) {
 		// Check the node exists
 		if (nodeRepository.findOneVisible(node, securityHelper.getLogin()) == null) {
 			return Collections.emptyList();
@@ -272,7 +268,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	 * @return <code>true</code> when there are more spaces to fetch.
 	 */
 	private boolean addAllByName(final Map<String, String> parameters, final String criteria, final List<Space> result,
-			final int start) throws IOException {
+			final int start) {
 		// The result should be JSON, otherwise, an empty result is mocked
 		final String spacesAsJson = Objects.toString(
 				getConfluenceResource(parameters, "/rest/api/space?type=global&limit=100&start=" + start),
@@ -341,7 +337,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	private void getAvatar(final CurlProcessor processor, final SpaceActivity activity, final String avatarUrl) {
 		if (!avatarUrl.endsWith("/default.png")) {
 			// Not default URL, get the PNG bytes
-			processor.process(new CurlRequest("GET", avatarUrl, null, (req, res) -> {
+			processor.process(new CurlRequest("GET", avatarUrl, null, (_, res) -> {
 				// PNG to DATA URL
 				if (res.getCode() == HttpServletResponse.SC_OK) {
 					activity.setAuthorAvatar("data:image/png;base64,"
@@ -429,7 +425,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	@Override
-	public String getLastVersion() throws IOException {
+	public String getLastVersion() {
 		// Get the download json from the default repository
 		return versionUtils.getLatestReleasedVersionName("https://jira.atlassian.com", "CONF");
 	}
@@ -450,7 +446,7 @@ public class ConfluencePluginResource extends AbstractToolPluginResource impleme
 	}
 
 	@Override
-	public SubscriptionStatusWithData checkSubscriptionStatus(final Map<String, String> parameters) throws IOException {
+	public SubscriptionStatusWithData checkSubscriptionStatus(final Map<String, String> parameters) {
 		final SubscriptionStatusWithData data = new SubscriptionStatusWithData();
 		data.put("space", validateSpace(parameters));
 		return data;
