@@ -10,7 +10,7 @@
  * (sidebar space-links list, a cross-domain fetch) read live data and are
  * deferred. Kept free of Vue SFC imports for unit testing.
  */
-import { renderServiceLink, renderDetailsChip, useI18nStore } from '@ligoj/host'
+import { renderServiceLink, renderDetailsChip, useI18nStore, remoteSearchField } from '@ligoj/host'
 
 const PARAM_URL = 'service:km:confluence:url'
 const PARAM_SPACE = 'service:km:confluence:space'
@@ -31,4 +31,16 @@ function renderDetailsKey(subscription) {
   return renderDetailsChip({ icon: 'mdi-book-open-page-variant', text: space, title: t('service:km:confluence:space') })
 }
 
-export default { renderFeatures, renderDetailsKey }
+// Subscribe-wizard input: the spaces of the selected instance, searched as the user types
+const SpaceField = remoteSearchField({ path: 'rest/service/km/confluence' })
+
+/**
+ * Subscribe-wizard hook: `service:km:confluence:space` is picked among the spaces.
+ * Null for every other parameter and when editing a node: the default
+ * type-based input is rendered.
+ */
+function parameterField({ parameter, isNode } = {}) {
+  return !isNode && parameter?.id === PARAM_SPACE ? SpaceField : null
+}
+
+export default { renderFeatures, renderDetailsKey, parameterField }
